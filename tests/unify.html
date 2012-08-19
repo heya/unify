@@ -1,0 +1,54 @@
+<!doctype html>
+<html>
+	<head>
+		<title>Testing unificator</title>
+		<script src="https://ajax.googleapis.com/ajax/libs/dojo/1.5/dojo/dojo.xd.js"></script>
+		<script src="../unify.js"></script>
+		<script>
+			function run(){
+				var unify = shards.unify, _ = unify._, variable = unify.variable, incomplete = unify.incomplete;
+
+				var result = unify(1, 1);
+				console.log("Should be {}:", result);
+				result = unify(1, 2);
+				console.log("Should be null:", result);
+				result = unify(1, true);
+				console.log("Should be null:", result);
+				result = unify(1, "1");
+				console.log("Should be null:", result);
+				result = unify(_, 2);
+				console.log("Should be {}:", result);
+				result = unify(variable("X"), 2);
+				console.log("Should be {X: 2}:", result);
+				result = unify(variable("X"), _);
+				console.log("Should be {}:", result);
+				result = unify(variable("X"), {a: "X", b: variable("Y")});
+				console.log("Should be {X: {a: 'X', b: Var('Y')}}:", result);
+				result = unify({a: variable("X")}, {b: variable("Y")});
+				console.log("Should be null:", result);
+				result = unify({a: variable("X"), b: "huh"}, {b: variable("Y"), a: false});
+				console.log("Should be {X: false, Y: 'huh'}:", result);
+				result = unify(incomplete({a: variable("X")}), {a: false, b: 2});
+				console.log("Should be {X: false}:", result);
+				result = unify([1, 2, variable("X")], [variable("Y"), 2, 3]);
+				console.log("Should be {X: 3, Y: 1}:", result);
+				result = unify([1, 5, variable("X")], [variable("Y"), 2, 3]);
+				console.log("Should be null:", result);
+			}
+
+			dojo.ready(function(){
+				var runButton = dojo.byId("runButton");
+				if(runButton){
+					dojo.connect(runButton, "onclick", run);
+				}else{
+					run();
+				}
+			});
+		</script>
+	</head>
+	<body>
+		<h1>Testing unificator</h1>
+		<!--<p><button id="runButton">Run</button></p>-->
+		<p>Check the console</p>
+	</body>
+</html>
