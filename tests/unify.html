@@ -36,6 +36,14 @@
 				console.log("Should be {X: 3, Y: 1}:", result);
 				result = unify([1, 5, variable("X")], [variable("Y"), 2, 3]);
 				console.log("Should be null:", result);
+				result = unify(incomplete([1, variable("X")]), [variable("Y"), 2, 3, 4, 5]);
+				console.log("Should be {X: 2, Y: 1}:", result);
+				result = unify(incomplete([1, variable("X")], variable("Z")), [variable("Y"), 2, 3, 4, 5]);
+				console.log("Should be {X: 2, Y: 1, Z: [3, 4, 5]}:", result);
+				result = unify(incomplete([[1], variable("X")], variable("Y")), [variable("Y"), 2, 1]);
+				console.log("Should be {X: 2, Y: [1]}:", result);
+				result = unify(incomplete([[1], variable("X")], variable("Y")), [variable("Y"), 2, 3]);
+				console.log("Should be null:", result);
 			}
 
 			dojo.ready(function(){
