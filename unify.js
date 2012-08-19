@@ -79,7 +79,7 @@ dojo.provide("shards.unify");
 		}
 		// unbound variable
 		if(val === _ || val === this){
-			return env.values;
+			return env;
 		}
 		if(val instanceof Var){
 			if(val.bound(env)){
@@ -87,10 +87,10 @@ dojo.provide("shards.unify");
 			}else{
 				env.bindVar(this.name, val.name);
 			}
-			return env.values;
+			return env;
 		}
 		env.bindVal(this.name, val);
-		return env.values;
+		return env;
 	};
 
 	function isVariable(x){
@@ -122,7 +122,7 @@ dojo.provide("shards.unify");
 		env = env || new Env();
 		// direct unity or anyvar
 		if(l === r || l === _ || r === _){
-			return env.values;
+			return env;
 		}
 		// unify with variables
 		if(l && l instanceof Var) {
@@ -141,7 +141,7 @@ dojo.provide("shards.unify");
 				if(l.rest && r.rest){
 					return unify(l.rest, r.rest, env);
 				}
-				return env.values;
+				return env;
 			}
 			return unifyIncompleteObjects(l, r, env);
 		}
@@ -165,7 +165,7 @@ dojo.provide("shards.unify");
 		// unify dates
 		if(l instanceof Date){
 			if(r instanceof Date){
-				return l.getTime() == r.getTime ? env.values : null;
+				return l.getTime() == r.getTime ? env : null;
 			}
 			return null;
 		}
@@ -176,7 +176,7 @@ dojo.provide("shards.unify");
 		if(l instanceof RegExp){
 			if(r instanceof RegExp){
 				return l.source == r.source && l.global == r.global &&
-					l.multiline == r.multiline && l.ignoreCase == r.ignoreCase ? env.values : null;
+					l.multiline == r.multiline && l.ignoreCase == r.ignoreCase ? env : null;
 			}
 			return null;
 		}
@@ -197,7 +197,7 @@ dojo.provide("shards.unify");
 				return null;
 			}
 		}
-		return env.values;
+		return env;
 	}
 
 	function unifyIncompleteArrays(il, r, env){
@@ -215,7 +215,7 @@ dojo.provide("shards.unify");
 		if(il.rest){
 			return unify(il.rest, r.slice(l.length), env);
 		}
-		return env.values;
+		return env;
 	}
 
 	function unifyExactObjects(l, r, env){
@@ -239,7 +239,7 @@ dojo.provide("shards.unify");
 				}
 			}
 		}
-		return env.values;
+		return env;
 	}
 
 	function unifyIncompleteObjects(il, r, env){
@@ -274,7 +274,7 @@ dojo.provide("shards.unify");
 			}
 			return unify(il.rest, o, env);
 		}
-		return env.values;
+		return env;
 	}
 
 	unify._ = _;
@@ -282,6 +282,7 @@ dojo.provide("shards.unify");
 	unify.isVariable = isVariable;
 	unify.incomplete = incomplete;
 	unify.isIncomplete = isIncomplete;
+	unify.Env = Env;
 
 	shards.unify = unify;
 })();
