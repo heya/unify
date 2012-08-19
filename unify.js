@@ -103,16 +103,17 @@ dojo.provide("shards.unify");
 
 	// Incomplete
 
-	function Incomplete(object){
+	function Incomplete(object, rest){
 		this.object = object;
+		this.rest = rest;
 	}
 
 	function isIncomplete(x){
 		return x && x instanceof Incomplete;
 	}
 
-	function incomplete(object){
-		return new Incomplete(object);
+	function incomplete(object, rest){
+		return new Incomplete(object, rest);
 	}
 
 	// unification
@@ -170,10 +171,10 @@ dojo.provide("shards.unify");
 			if(r instanceof Incomplete){
 				return unifyExactObjects(l.object, r.object, env);
 			}
-			return unifyIncompleteObjects(l.object, r, env);
+			return unifyIncompleteObjects(l, r, env);
 		}
 		if(r instanceof Incomplete){
-			return unifyIncompleteObjects(r.object, l, env);
+			return unifyIncompleteObjects(r, l, env);
 		}
 		return unifyExactObjects(l, r, env);
 	}
@@ -191,8 +192,9 @@ dojo.provide("shards.unify");
 		return env.values;
 	}
 
-	function unifyIncompleteObjects(l, r, env){
+	function unifyIncompleteObjects(il, r, env){
 		// left is incomplete
+		var l = il.object;
 		// unify all left properties
 		for(var k in l){
 			if(l.hasOwnProperty(k)){
@@ -204,6 +206,19 @@ dojo.provide("shards.unify");
 					return null;
 				}
 			}
+		}
+		// unify the rest variable, if needed
+		if(il.rest){
+			// collect extra properties
+			var o = {};
+			for(k in r){
+				if(r.hasOwnProperty(k)){
+					if(!l.hasOwnProperty(k)){
+						o[k] = r[k];
+					}
+				}
+			}
+			return unify(il.rest, o, env);
 		}
 		return env.values;
 	}

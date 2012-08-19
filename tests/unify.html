@@ -30,6 +30,8 @@
 				console.log("Should be {X: false, Y: 'huh'}:", result);
 				result = unify(incomplete({a: variable("X")}), {a: false, b: 2});
 				console.log("Should be {X: false}:", result);
+				result = unify(incomplete({a: variable("X")}, variable("Y")), {a: false, b: 2});
+				console.log("Should be {X: false, Y: {b: 2}}:", result);
 				result = unify([1, 2, variable("X")], [variable("Y"), 2, 3]);
 				console.log("Should be {X: 3, Y: 1}:", result);
 				result = unify([1, 5, variable("X")], [variable("Y"), 2, 3]);
