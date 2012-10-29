@@ -16,30 +16,26 @@ dojo.provide("shards.unify");
 	Env.prototype.bindVar = function(name1, name2){
 		var vars = this.variables, u, t, k;
 		if(vars.hasOwnProperty(name1)){
+			u = vars[name1];
 			if(vars.hasOwnProperty(name2)){
-				u = vars[name1];
 				t = vars[name2];
 				for(k in t){
 					if(t.hasOwnProperty(k)){
+						vars[k] = u;
 						u[k] = 1;
 					}
 				}
 			}else{
-				u = vars[name1];
+				vars[name2] = u;
 				u[name2] = 1;
 			}
 		}else{
 			if(vars.hasOwnProperty(name2)){
-				u = vars[name2];
+				u = vars[name1] = vars[name2];
 				u[name1] = 1;
 			}else{
-				u = {};
+				u = vars[name1] = vars[name2] = {};
 				u[name1] = u[name2] = 1;
-			}
-		}
-		for(k in u){
-			if(u.hasOwnProperty(k)){
-				vars[k] = u;
 			}
 		}
 	};
@@ -77,10 +73,11 @@ dojo.provide("shards.unify");
 		if(this.bound(env)){
 			return unify(this.get(env), val, env);
 		}
-		// unbound variable
-		if(val === _ || val === this){
-			return env;
-		}
+		// the next case is taken care of in unify() directly
+		// the case of unbound variable
+		//if(val === _ || val === this){
+		//	return env;
+		//}
 		if(val instanceof Var){
 			if(val.bound(env)){
 				env.bindVal(this.name, val.get(env));
