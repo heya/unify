@@ -1,0 +1,28 @@
+{
+  "name": "heya-unify",
+  "version": "0.1.1",
+  "description": "Constructor: a toolkit to construct JavaScript code.",
+  "main": "main.js",
+  "directories": {
+    "test": "tests"
+  },
+  "dependencies": {},
+  "devDependencies": {},
+  "scripts": {
+    "test": "node tests/tests.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/heya/unify.git"
+  },
+  "keywords": [
+    "unification",
+    "equivalence",
+    "comparison",
+    "deep equivalence",
+    "code generation",
+    "code construction"
+  ],
+  "author": "Eugene Lazutkin <eugene.lazutkin@gmail.com> (http://lazutkin.com/)",
+  "license": "BSD"
+}
