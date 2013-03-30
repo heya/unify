@@ -3,8 +3,6 @@
 		define([], factory);
 	}else if(typeof module != "undefined"){ // node.js
 		module.exports = factory();
-	}else{
-		unify = factory();
 	}
 })(function(){
 	"use strict";
@@ -183,15 +181,20 @@
 			return null;
 		}
 		// unify arrays and objects
+		var defaultArrayType = env.arrayType ? "open" : "exact",
+			defaultObjectType = env.objectType ? "open" : "exact";
 		if(l instanceof Array){
 			// unify a naked array
 			if(r instanceof Array){
 				// with another naked array
-				return unifyArrays(l, "exact", r, "exact", env);
+				return unifyArrays(l, defaultArrayType, r, defaultArrayType, env);
 			}
 			if(r instanceof Wrap){
 				// with a wrapped array
-				return r.object instanceof Array ? unifyAndFix(unifyArrays, l, "exact", r, env) : null;
+				return !(r.object instanceof Array) ? null :
+					defaultArrayType <= r.type ?
+						unifyAndFix(unifyArrays, l, defaultArrayType, r, env) :
+						unifyArrays(r.object, r.type, l, defaultArrayType, env);
 			}
 			return null;
 		}
@@ -201,12 +204,14 @@
 				// unify arrays
 				if(r instanceof Array){
 					// with another naked array
-					return unifyAndFix(unifyArrays, r, "exact", l, env);
+					return l.type <= defaultArrayType ?
+						unifyArrays(l.object, l.type, r, defaultArrayType, env) :
+						unifyAndFix(unifyArrays, r, defaultArrayType, l, env);
 				}
 				if(r instanceof Wrap){
 					if(r.object instanceof Array){
 						// with another wrapped array
-						return l.type < r.type ?
+						return l.type <= r.type ?
 							unifyAndFix(unifyArrays, l.object, l.type, r, env) :
 							unifyAndFix(unifyArrays, r.object, r.type, l, env);
 					}
@@ -224,17 +229,21 @@
 					unifyAndFix(unifyObjects, r.object, r.type, l, env);
 			}
 			// with a naked object
-			return unifyAndFix(unifyObjects, r, "exact", l, env);
+			return l.type <= defaultObjectType ?
+				unifyObjects(l.object, l.type, r, defaultObjectType, env) :
+				unifyAndFix(unifyObjects, r, defaultObjectType, l, env);
 		}
 		// unify a naked object
 		if(r instanceof Array) return null;
 		if(r instanceof Wrap){
 			if(r.object instanceof Array) return null;
 			// with a wrapped object
-			return unifyAndFix(unifyObjects, l, "exact", r, env);
+			return defaultObjectType <= r.type ?
+				unifyAndFix(unifyObjects, l, defaultObjectType, r, env) :
+				unifyObjects(r.object, r.type, l, defaultObjectType, env);
 		}
 		// unify naked objects
-		return unifyObjects(l, "exact", r, "exact", env);
+		return unifyObjects(l, defaultObjectType, r, defaultObjectType, env);
 	}
 
 	// unification helpers
