@@ -1,10 +1,16 @@
 (function(factory){
+	var deps = ["module", "heya-logger", "../main", "../preprocess",
+			"../unifiers/matchString"];
 	if(typeof define != "undefined"){ // AMD
-		define(["module", "../main", "../preprocess", "heya-logger"], factory);
+		define(deps, factory);
 	}else if(typeof module != "undefined"){ // node.js
-		factory(module, require("../main"), require("../preprocess"), require("heya-logger"));
+		factory.apply(null,
+			deps.filter(function(_, i){ return i < factory.length; }).
+			map(function req(name){
+				return name === "require" && require || name === "module" && module || require(name);
+			}));
 	}
-})(function(module, unify, preprocess, logger){
+})(function(module, logger, unify, preprocess, matchString){
 	"use strict";
 
 	logger = logger.getLogger(module);
@@ -162,6 +168,15 @@
 			eval(test("result && x.get(result).type === 'soft'"));
 			eval(test("result && unify(x.get(result).object, {a: 1, b: 2})"));
 		},
+		function test_soft_presets(){
+			var x = v("x"), env = unify(x, soft({}));
+			var result = unify([1], [x], env);
+			eval(test("!result"));
+			result = unify([open({a: 1}), open({b: 2})], [x, x], env);
+			eval(test("result && isSoft(x.get(result))"));
+			eval(test("result && x.get(result).type === 'soft'"));
+			eval(test("result && unify(x.get(env).object, {a: 1, b: 2})"));
+		},
 		function test_complex_structures(){
 			var x = v("x"), y = v("y");
 			var tree = {
@@ -190,15 +205,6 @@
 			});
 			eval(test("result && x.get(result) === 0"));
 			eval(test("result && unify(y.get(result), {value: 3})"));
-		},
-		function test_soft_presets(){
-			var x = v("x"), env = unify(x, soft({}));
-			var result = unify([1], [x], env);
-			eval(test("!result"));
-			result = unify([open({a: 1}), open({b: 2})], [x, x], env);
-			eval(test("result && isSoft(x.get(result))"));
-			eval(test("result && x.get(result).type === 'soft'"));
-			eval(test("result && unify(x.get(env).object, {a: 1, b: 2})"));
 		},
 		function test_preprocess(){
 			var l = {
@@ -230,6 +236,25 @@
 			eval(test("!result"));
 			result = unify(l.y, preprocess({c: [1, 2]}, true, true));
 			eval(test("result"));
+		},
+		function test_matchString(){
+			var result = unify("12345", matchString(/1(2)3/));
+			eval(test("result"));
+			result = unify("12345", matchString(/1(2)3/, null, {input: "12345", index: 0}));
+			eval(test("result"));
+			result = unify("12345", matchString(/1(2)3/, ["123", "2"]));
+			eval(test("result"));
+			//
+			var x = v("x"), y = v("y");
+			result = unify("12345", matchString(/1(2)3/, x, y));
+			eval(test("result"));
+			eval(test("result && unify(x.get(result), ['123', '2'])"));
+			eval(test("result && unify(y.get(result), {index: 0, input: '12345'})"));
+			eval(test("result && unify(y.get(result), open({index: 0}))"));
+			//
+			result = unify("12345", matchString(/1(2)3/, [_, x], open({index: y})));
+			eval(test("result && x.get(result) === '2'"));
+			eval(test("result && y.get(result) === 0"));
 		}
 	];
 
