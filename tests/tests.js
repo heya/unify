@@ -30,9 +30,9 @@
 
 	function submit(msg, success){
 		if(success){
-			res("Success: " + msg + " --- in " + _current + ", #" + _local);
+			res("Success: " + msg + " --- in " + _current + ", #" + (_local + 1));
 		}else{
-			res("Failed: " + msg + " --- in " + _current + ", #" + _local, true);
+			res("Failed: " + msg + " --- in " + _current + ", #" + (_local + 1), true);
 		}
 	}
 
