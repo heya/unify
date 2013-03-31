@@ -1,14 +1,13 @@
 (function(factory){
 	if(typeof define != "undefined"){ // AMD
-		define(["module", "./main", "heya-logger/assert"], factory);
+		define(["module", "heya-logger/assert", "./main"], factory);
 	}else if(typeof module != "undefined"){ // node.js
-		module.exports = factory(module, require("./main"), require("heya-logger/assert"));
+		module.exports = factory(module, require("heya-logger/assert"), require("./main"));
 	}
-})(function(module, unify, logger){
+})(function(module, logger, unify){
 	"use strict";
 
-	var any = unify.any, isVar = unify.isVariable,
-		isWrapped = unify.isWrapped, open = unify.open,
+	var any = unify.any, isUnifier = unify.isUnifier, open = unify.open,
 		logger = logger.getLogger(module);
 
 	function identity(x){ return x; }
@@ -53,7 +52,7 @@
 			var x = stackIn.pop();
 			// eliminate all non-processed objects
 			if(!x || typeof x != "object" || x instanceof Date || x instanceof RegExp ||
-					x === any || isVar(x) || isWrapped(x)){
+					x === any || isUnifier(x)){
 				stackOut.push(x);
 				continue;
 			}
