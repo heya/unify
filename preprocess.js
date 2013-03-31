@@ -11,29 +11,35 @@
 		isWrapped = unify.isWrapped, open = unify.open,
 		logger = logger.getLogger(module);
 
+	function identity(x){ return x; }
+
 	function Command(f, pattern){
 		this.f = f;
 		this.p = pattern;
 	}
 
-	function assembleOpenArray(stackOut){
-		var array = [], pattern = this.p;
-		for(var i = 0; i < pattern.length; ++i){
-			if(pattern.hasOwnProperty(i)){
-				array[i] = stackOut.pop();
+	function assembleArray(wrap){
+		return function(stackOut){
+			var array = [], pattern = this.p;
+			for(var i = 0; i < pattern.length; ++i){
+				if(pattern.hasOwnProperty(i)){
+					array[i] = stackOut.pop();
+				}
 			}
+			stackOut.push(wrap(array));
 		}
-		stackOut.push(open(array));
 	}
 
-	function assembleOpenObject(stackOut){
-		var object = {}, pattern = this.p;
-		for(var k in pattern){
-			if(pattern.hasOwnProperty(k)){
-				object[k] = stackOut.pop();
+	function assembleObject(wrap){
+		return function(stackOut){
+			var object = {}, pattern = this.p;
+			for(var k in pattern){
+				if(pattern.hasOwnProperty(k)){
+					object[k] = stackOut.pop();
+				}
 			}
-		}
-		stackOut.push(open(object));
+			stackOut.push(wrap(object));
+		};
 	}
 
 	return function preprocess(o, nonExactObjects, nonExactArrays){
@@ -58,11 +64,7 @@
 			}
 			// process naked arrays
 			if(x instanceof Array){
-				if(!nonExactArrays){
-					stackOut.push(x);
-					continue;
-				}
-				stackIn.push(new Command(assembleOpenArray, x));
+				stackIn.push(new Command(assembleArray(nonExactArrays ? open : identity), x));
 				for(var i = 0; i < x.length; ++i){
 					if(x.hasOwnProperty(i)){
 						stackIn.push(x[i]);
@@ -71,11 +73,7 @@
 				continue;
 			}
 			// process naked objects
-			if(!nonExactObjects){
-				stackOut.push(x);
-				continue;
-			}
-			stackIn.push(new Command(assembleOpenObject, x));
+			stackIn.push(new Command(assembleObject(nonExactObjects ? open : identity), x));
 			for(var k in x){
 				if(x.hasOwnProperty(k)){
 					stackIn.push(x[k]);
