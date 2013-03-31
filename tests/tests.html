@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>heya-logger test runner</title>
+		<script src="http://requirejs.org/docs/release/2.1.5/minified/require.js"></script>
+		<script>
+			require.config({
+				baseUrl: ".",
+				packages: [
+					{name: "heya-logger", location: "../node_modules/heya-logger"}
+				],
+				paths: {
+					"domReady": "https://raw.github.com/requirejs/domReady/latest/domReady"
+				}
+			});
+			require(["require", "./tests", "domReady!"], function(require){
+				var test = require("./tests");
+			});
+		</script>
+	</head>
+	<body>
+	</body>
+</html>
