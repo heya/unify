@@ -59,6 +59,30 @@
 		}
 	};
 
+	// Command
+
+	function Command(f, l, r){
+		this.f = f;
+		this.l = l;
+		this.r = r;
+	}
+
+	// Custom unifier
+
+	function Unifier(){}
+
+	function isUnifier(x){
+		return x && x instanceof Unifier;
+	}
+
+	// Unifier should define a method:
+	// unify(val, ls, rs, env):
+	// val is a value we are unifying with
+	// ls is a stack of left arguments
+	// rs is a stack of right arguments corresponding to ls
+	// env is an environment
+	// the result should be true/false for success/failure
+
 	// Var
 
 	var unique = 0;
@@ -67,33 +91,35 @@
 		this.name = name || ("var" + unique++);
 	}
 
-	Var.prototype = {
-		bound: function(env){
-			return env.values.hasOwnProperty(this.name);
-		},
-		get: function(env){
-			return env.values[this.name];
-		},
-		unify: function(val, env){
-			if(this.bound(env)){
-				return unify(this.get(env), val, env);
-			}
-			// the next case is taken care of in unify() directly
-			// the case of unbound variable
-			//if(val === _ || val === this){
-			//	return env;
-			//}
-			if(val instanceof Var){
-				if(val.bound(env)){
-					env.bindVal(this.name, val.get(env));
-				}else{
-					env.bindVar(this.name, val.name);
-				}
-				return env;
-			}
-			env.bindVal(this.name, val);
-			return env;
+	Var.prototype = Object.create(Unifier.prototype);
+
+	Var.prototype.bound = function(env){
+		return env.values.hasOwnProperty(this.name);
+	};
+	Var.prototype.get = function(env){
+		return env.values[this.name];
+	};
+	Var.prototype.unify = function(val, ls, rs, env){
+		if(this.bound(env)){
+			ls.push(this.get(env));
+			rs.push(val);
+			return true;
 		}
+		// the next case is taken care of in unify() directly
+		// the case of unbound variable
+		//if(val === _ || val === this){
+		//	return env;
+		//}
+		if(val instanceof Var){
+			if(val.bound(env)){
+				env.bindVal(this.name, val.get(env));
+			}else{
+				env.bindVar(this.name, val.name);
+			}
+			return true;
+		}
+		env.bindVal(this.name, val);
+		return true;
 	};
 
 	function isVariable(x){
@@ -110,6 +136,40 @@
 		this.type = type;
 		this.object = o;
 	}
+
+	Wrap.prototype = Object.create(Unifier.prototype);
+
+	Wrap.prototype.unify = function(val, ls, rs, env){
+		var ops;
+		if(this.object instanceof Array){
+			// unify arrays
+			if(!val) return false;
+			if(val instanceof Array){
+				// with a naked array
+				return unifyArrays(this.object, this.type, this,
+					val, env.arrayType ? "open" : "exact", null, ls, rs, env);
+			}
+			if(val instanceof Wrap){
+				// with a wrapped array
+				return val.object instanceof Array &&
+					unifyArrays(this.object, this.type, this,
+						val.object, val.type, val, ls, rs, env);
+			}
+			return false;
+		}
+		// unify objects
+		if(!val || val instanceof Array) return false;
+		if(val instanceof Wrap){
+			// with a wrapped object
+			return !(val.object instanceof Array) &&
+				unifyObjects(this.object, this.type, this,
+					val.object, val.type, val, ls, rs, env);
+		}
+		// with a naked object
+		return typeof val == "object" &&
+			unifyObjects(this.object, this.type, this,
+				val, env.objectType ? "open" : "exact", null, ls, rs, env);
+	};
 
 	function isWrapped(o){
 		return o && o instanceof Wrap;
@@ -131,264 +191,265 @@
 		return o && o instanceof Wrap && o.type === "soft";
 	}
 
+	// registry of well-known constructors
+
+	var registry = [
+			Array,  unifyArray,
+			Date,   unifyDate,
+			RegExp, unifyRegExp
+		];
+
+	function unifyArray(l, r, ls, rs, env){
+		if(!r || !(r instanceof Array) || !env.arrayType && l.length != r.length) return false;
+		for(var i = 0, n = Math.min(l.length, r.length); i < n; ++i){
+			ls.push(l[i]);
+			rs.push(r[i]);
+		}
+		return true;
+	}
+
+	function unifyDate(l, r, ls, rs, env){
+		return r && r instanceof Date && l.getTime() == r.getTime();
+	}
+
+	function unifyRegExp(l, r, ls, rs, env){
+		return r && r instanceof RegExp && l.source == r.source &&
+			l.global == r.global && l.multiline == r.multiline &&
+			l.ignoreCase == r.ignoreCase;
+	}
+
+	// unification of arrays
+
+	var arrayOps = {
+			exact: {
+				exact: {
+					precheck: function(l, r){ return l.length == r.length; }
+				},
+				open: {
+					precheck: function(l, r){ return l.length >= r.length; }
+				},
+				soft: {
+					precheck: function(l, r){ return l.length >= r.length; },
+					fix: function(){ this.l.type = "exact"; }
+				}
+			},
+			open: {
+				open: {},
+				soft: {}
+			},
+			soft: {
+				soft: {
+					update: function(){
+						if(this.l.length > this.r.length){
+							this.r.push.apply(this.r, this.l.slice(this.r.length));
+						}else if(this.l.length < this.r.length){
+							this.l.push.apply(this.l, this.r.slice(this.l.length));
+						}
+					}
+				}
+			}
+		};
+	arrayOps.exact.exact.compare = arrayOps.exact.open.compare = arrayOps.exact.soft.compare =
+		function(l, r, ls, rs){
+			for(var i = 0, n = r.length; i < n; ++i){
+				ls.push(l[i]);
+				rs.push(r[i]);
+			}
+		};
+	arrayOps.open.open.compare = arrayOps.open.soft.compare = arrayOps.soft.soft.compare =
+		function(l, r, ls, rs){
+			for(var i = 0, n = Math.min(l.length, r.length); i < n; ++i){
+				ls.push(l[i]);
+				rs.push(r[i]);
+			}
+		};
+	arrayOps.exact.soft.update = arrayOps.open.soft.update =
+		function(){
+			if(this.l.length > this.r.length){
+				this.r.push.apply(this.r, this.l.slice(this.r.length));
+			}
+		};
+
+	function unifyArrays(l, lt, lm, r, rt, rm, ls, rs, env){
+		if(lt > rt){
+			var t = l; l = r; r = t;
+			t = lm; lm = rm; rm = t;
+			t = lt; lt = rt; rt = t;
+		}
+		var ops = arrayOps[lt][rt];
+		if(ops.precheck && !ops.precheck(l, r)) return false;
+		if(ops.fix && rm) ls.push(new Command(ops.fix, rm));
+		if(ops.update && l.length != r.length) ls.push(new Command(ops.update, l, r));
+		ops.compare(l, r, ls, rs, env);
+		return true;
+	}
+
+	// unification of objects
+
+	var objectOps = {
+			exact: {
+				exact: {
+					precheck: function(l, r){
+						for(var k in l){
+							if(l.hasOwnProperty(k)){
+								if(!r.hasOwnProperty(k)) return false;
+							}
+						}
+						return true;
+					}
+				},
+				open: {},
+				soft: {
+					fix: function(){ this.l.type = "exact"; }
+				}
+			},
+			open: {
+				open: {},
+				soft: {}
+			},
+			soft: {
+				soft: {
+					update: function(){
+						for(var k in this.l){
+							if(this.l.hasOwnProperty(k)){
+								if(!this.r.hasOwnProperty(k)){
+									this.r[k] = this.l[k];
+								}
+							}
+						}
+						for(k in this.r){
+							if(this.r.hasOwnProperty(k)){
+								if(!this.l.hasOwnProperty(k)){
+									this.l[k] = this.r[k];
+								}
+							}
+						}
+					}
+				}
+			}
+		};
+	objectOps.exact.exact.compare = objectOps.exact.open.compare = objectOps.exact.soft.compare =
+		function(l, r, ls, rs){
+			for(var k in r){
+				if(r.hasOwnProperty(k)){
+					if(l.hasOwnProperty(k)){
+						ls.push(l[k]);
+						rs.push(r[k])
+					}else{
+						return false;
+					}
+				}
+			}
+			return true;
+		};
+	objectOps.open.open.compare = objectOps.open.soft.compare = objectOps.soft.soft.compare =
+		function(l, r, ls, rs){
+			for(var k in r){
+				if(r.hasOwnProperty(k)){
+					if(l.hasOwnProperty(k)){
+						ls.push(l[k]);
+						rs.push(r[k])
+					}
+				}
+			}
+			return true;
+		};
+	objectOps.exact.soft.update = objectOps.open.soft.update =
+		function(){
+			for(var k in this.l){
+				if(this.l.hasOwnProperty(k)){
+					if(!this.r.hasOwnProperty(k)){
+						this.r[k] = this.l[k];
+					}
+				}
+			}
+		};
+
+	function unifyObjects(l, lt, lm, r, rt, rm, ls, rs, env){
+		if(lt > rt){
+			var t = l; l = r; r = t;
+			t = lm; lm = rm; rm = t;
+			t = lt; lt = rt; rt = t;
+		}
+		var ops = objectOps[lt][rt];
+		if(ops.precheck && !ops.precheck(l, r)) return false;
+		if(ops.fix && rm) ls.push(new Command(ops.fix, rm));
+		if(ops.update) ls.push(new Command(ops.update, l, r));
+		if(!ops.compare(l, r, ls, rs, env)) return false;
+		return true;
+	}
+
 	// unification
 
 	function unify(l, r, env){
 		env = env || new Env();
-		// direct unity or anyvar
-		if(l === r || l === _ || r === _){
-			return env;
-		}
-		// unify with variables
-		if(l && l instanceof Var) {
-			return l.unify(r, env);
-		}
-		if(r && r instanceof Var) {
-			return r.unify(l, env);
-		}
-		// check rough types
-		if(typeof l != typeof r){
-			return null;
-		}
-		// special case: NaN
-		if(typeof l == "number" && isNaN(l) && isNaN(r)){
-			return env;
-		}
-		// cut off impossible combinations
-		if(typeof l != "object" && typeof l != "function" || !l || !r){
-			return null;
-		}
-		// unify dates
-		if(l instanceof Date){
-			if(r instanceof Date){
-				return l.getTime() == r.getTime() ? env : null;
+		var ls = [l], rs = [r];
+		main: while(ls.length){
+			// perform a command, or extract a pair
+			l = ls.pop();
+			if(l && l instanceof Command){
+				l.f();
+				continue;
 			}
-			return null;
-		}
-		if(r instanceof Date){
-			return null;
-		}
-		// unify regular expressions
-		if(l instanceof RegExp){
-			if(r instanceof RegExp){
-				return l.source == r.source && l.global == r.global &&
-					l.multiline == r.multiline && l.ignoreCase == r.ignoreCase ?
-						env : null;
+			r = rs.pop();
+			// direct unity or anyvar
+			if(l === r || l === _ || r === _){
+				continue;
 			}
-			return null;
-		}
-		if(r instanceof RegExp){
-			return null;
-		}
-		// unify arrays and objects
-		var defaultArrayType = env.arrayType ? "open" : "exact",
-			defaultObjectType = env.objectType ? "open" : "exact";
-		if(l instanceof Array){
-			// unify a naked array
-			if(r instanceof Array){
-				// with another naked array
-				return unifyArrays(l, defaultArrayType, r, defaultArrayType, env);
+			// process variables (variables have priority)
+			if(l && l instanceof Var){
+				 if(l.unify(r, ls, rs, env)) continue;
+				 return null;
 			}
-			if(r instanceof Wrap){
-				// with a wrapped array
-				return !(r.object instanceof Array) ? null :
-					defaultArrayType <= r.type ?
-						unifyAndFix(unifyArrays, l, defaultArrayType, r, env) :
-						unifyArrays(r.object, r.type, l, defaultArrayType, env);
+			if(r && r instanceof Var){
+				 if(r.unify(l, ls, rs, env)) continue;
+				 return null;
 			}
-			return null;
-		}
-		// unify a wrapped object
-		if(l instanceof Wrap){
-			if(l.object instanceof Array){
-				// unify arrays
-				if(r instanceof Array){
-					// with another naked array
-					return l.type <= defaultArrayType ?
-						unifyArrays(l.object, l.type, r, defaultArrayType, env) :
-						unifyAndFix(unifyArrays, r, defaultArrayType, l, env);
-				}
-				if(r instanceof Wrap){
-					if(r.object instanceof Array){
-						// with another wrapped array
-						return l.type <= r.type ?
-							unifyAndFix(unifyArrays, l.object, l.type, r, env) :
-							unifyAndFix(unifyArrays, r.object, r.type, l, env);
-					}
-					return null;
-				}
+			// invoke custom unifiers
+			if(l && l instanceof Unifier){
+				 if(l.unify(r, ls, rs, env)) continue;
+				 return null;
+			}
+			if(r && r instanceof Unifier){
+				 if(r.unify(l, ls, rs, env)) continue;
+				 return null;
+			}
+			// check rough types
+			if(typeof l != typeof r){
 				return null;
 			}
-			// unify objects
-			if(r instanceof Array) return null;
-			if(r instanceof Wrap){
-				if(r.object instanceof Array) return null;
-				// with a wrapped object
-				return l.type < r.type ?
-					unifyAndFix(unifyObjects, l.object, l.type, r, env) :
-					unifyAndFix(unifyObjects, r.object, r.type, l, env);
+			// special case: NaN
+			if(typeof l == "number" && isNaN(l) && isNaN(r)){
+				continue;
 			}
-			// with a naked object
-			return l.type <= defaultObjectType ?
-				unifyObjects(l.object, l.type, r, defaultObjectType, env) :
-				unifyAndFix(unifyObjects, r, defaultObjectType, l, env);
+			// cut off impossible combinations
+			if(typeof l != "object" && typeof l != "function" || !l || !r){
+				return null;
+			}
+			// process registered constructors
+			for(var i = 0; i < registry.length; i += 2){
+				if(l instanceof registry[i]){
+					if(registry[i + 1](l, r, ls, rs, env)) continue main;
+					return null;
+				}
+			}
+			// process naked objects
+			if(!unifyObjects(l, env.objectType ? "open" : "exact", null,
+				r, env.objectType ? "open" : "exact", null, ls, rs, env)) return null;
 		}
-		// unify a naked object
-		if(r instanceof Array) return null;
-		if(r instanceof Wrap){
-			if(r.object instanceof Array) return null;
-			// with a wrapped object
-			return defaultObjectType <= r.type ?
-				unifyAndFix(unifyObjects, l, defaultObjectType, r, env) :
-				unifyObjects(r.object, r.type, l, defaultObjectType, env);
-		}
-		// unify naked objects
-		return unifyObjects(l, defaultObjectType, r, defaultObjectType, env);
-	}
-
-	// unification helpers
-
-	function unifyAndFix(unify, l, lt, r, env){
-		if(unify(l, lt, r.object, r.type, env)){
-			// promote from soft to exact
-			if(lt == "exact" && r.type == "soft"){
-				r.type = "exact";
-			}
-			return env;
-		}
-		return null;
-	}
-
-	// array unification helpers
-
-	var checkAgainst = {
-		exact: {
-			exact: function(a, b, env){
-				if(a.length != b.length) return null;
-				for(var k = a.length - 1; k >= 0; --k){
-					if(!unify(a[k], b[k], env)) return null;
-				}
-				return env;
-			},
-			open: function(a, b, env){
-				if(a.length < b.length) return null;
-				for(var k = b.length - 1; k >= 0; --k){
-					if(!unify(a[k], b[k], env)) return null;
-				}
-				return env;
-			},
-			soft: function(a, b, env){
-				if(a.length < b.length) return null;
-				for(var k = b.length - 1; k >= 0; --k){
-					if(!unify(a[k], b[k], env)) return null;
-				}
-				if(a.length > b.length){
-					b.push.apply(b, a.slice(b.length));
-				}
-				return env;
-			}
-		},
-		open: {
-			open: function(a, b, env){
-				for(var k = Math.min(a.length, b.length) - 1; k >= 0; --k){
-					if(!unify(a[k], b[k], env)) return null;
-				}
-				return env;
-			},
-			soft: function(a, b, env){
-				for(var k = Math.min(a.length, b.length) - 1; k >= 0; --k){
-					if(!unify(a[k], b[k], env)) return null;
-				}
-				if(a.length > b.length){
-					b.push.apply(b, a.slice(b.length));
-				}
-				return env;
-			}
-		},
-		soft: {
-			soft: function(a, b, env){
-				for(var k = Math.min(a.length, b.length) - 1; k >= 0; --k){
-					if(!unify(a[k], b[k], env)) return null;
-				}
-				if(a.length > b.length){
-					b.push.apply(b, a.slice(b.length));
-				}else if(a.length < b.length){
-					a.push.apply(a, b.slice(a.length));
-				}
-				return env;
-			}
-		}
-	};
-
-	function unifyArrays(l, lt, r, rt, env){
-		return checkAgainst[lt][rt](l, r, env) ? env : null;
-	}
-
-	// object unification helpers
-
-	var check1st = {
-		exact: function(a, b, env){
-			for(var k in a){
-				if(a.hasOwnProperty(k)){
-					if(b.hasOwnProperty(k)){
-						if(!unify(a[k], b[k], env)) return null;
-					}else{
-						return null;
-					}
-				}
-			}
-			return env;
-		},
-		open: function(a, b, env){
-			for(var k in a){
-				if(a.hasOwnProperty(k) && b.hasOwnProperty(k) &&
-					!unify(a[k], b[k], env)) return null;
-			}
-			return env;
-		},
-		soft: function(a, b, env){
-			for(var k in a){
-				if(a.hasOwnProperty(k)){
-					if(b.hasOwnProperty(k)){
-						if(!unify(a[k], b[k], env)) return null;
-					}else{
-						b[k] = a[k];
-					}
-				}
-			}
-			return env;
-		}
-	};
-
-	var check2nd = {
-		exact: function(a, b, env){
-			for(var k in b){
-				if(b.hasOwnProperty(k) && !a.hasOwnProperty(k)) return null;
-			}
-			return env;
-		},
-		open: function(a, b, env){ return env; },
-		soft: function(a, b, env){
-			for(var k in b){
-				if(b.hasOwnProperty(k) && !a.hasOwnProperty(k)){
-					a[k] = b[k];
-				}
-			}
-			return env;
-		}
-	};
-
-	function unifyObjects(l, lt, r, rt, env){
-		return check1st[rt](l, r, env) && check2nd[lt](l, r, env) ? env : null;
+		return env;
 	}
 
 	// exports
 
 	unify._ = unify.any = _;
-	unify.Env  = Env;
+	unify.registry = registry;
+	unify.Env = Env;
+	unify.Unifier = Unifier;
+	unify.variable = variable;
 	unify.open = open;
 	unify.soft = soft;
-	unify.variable   = variable;
+	unify.isUnifier  = isUnifier;
 	unify.isVariable = isVariable;
 	unify.isWrapped  = isWrapped;
 	unify.isOpen = isOpen;
