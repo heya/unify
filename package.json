@@ -1,6 +1,6 @@
 {
   "name": "heya-unify",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Constructor: a toolkit to construct JavaScript code.",
   "main": "main.js",
   "directories": {
