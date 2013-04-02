@@ -1,15 +1,15 @@
 {
   "name": "heya-unify",
-  "version": "0.1.4",
-  "description": "Constructor: a toolkit to construct JavaScript code.",
+  "version": "0.1.5",
+  "description": "Unify: a unification tool with a deep equivalence and partitioning of objects.",
   "main": "main.js",
   "directories": {
     "test": "tests"
   },
-  "dependencies": {
-    "heya-logger": ">=0.1"
+  "dependencies": {},
+  "devDependencies": {
+    "heya-ice": ">=0.1"
   },
-  "devDependencies": {},
   "scripts": {
     "test": "node tests/tests.js"
   },

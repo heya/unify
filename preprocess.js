@@ -1,8 +1,8 @@
 (function(factory){
 	if(typeof define != "undefined"){ // AMD
-		define(["module", "heya-logger/assert", "./main"], factory);
+		define(["module", "heya-ice/assert", "./main"], factory);
 	}else if(typeof module != "undefined"){ // node.js
-		module.exports = factory(module, require("heya-logger/assert"), require("./main"));
+		module.exports = factory(module, require("heya-ice/assert"), require("./main"));
 	}
 })(function(module, logger, unify){
 	"use strict";

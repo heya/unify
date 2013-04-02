@@ -1,6 +1,6 @@
 # Unify [![Build Status](https://travis-ci.org/heya/unify.png?branch=master)](https://travis-ci.org/heya/unify)
 
-Unify: a unification tool that includes a deep equivalence and partitioning of objects.
+Unify: a unification tool with a deep equivalence and partitioning of objects.
 
 ## How to install
 

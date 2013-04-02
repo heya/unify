@@ -1,5 +1,5 @@
 (function(factory){
-	var deps = ["module", "heya-logger", "../main", "../preprocess",
+	var deps = ["module", "heya-ice", "../main", "../preprocess",
 			"../unifiers/matchString"];
 	if(typeof define != "undefined"){ // AMD
 		define(deps, factory);
