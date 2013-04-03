@@ -1,9 +1,9 @@
 /* UMD.define */ (typeof define=="function"&&define||function(d,f,m){m={module:module,require:require};module.exports=f.apply(null,d.map(function(n){return m[n]||require(n)}))})
-(["module", "heya-ice/assert", "./main"], function(module, logger, unify){
+(["module", "heya-ice/assert", "./main"], function(module, ice, unify){
 	"use strict";
 
 	var any = unify.any, isUnifier = unify.isUnifier, open = unify.open,
-		logger = logger.getLogger(module);
+		ice = ice.specialize(module);
 
 	function identity(x){ return x; }
 
@@ -76,7 +76,7 @@
 		}
 
 		// result
-		eval(logger.assert("stackOut.length == 1"));
+		eval(ice.assert("stackOut.length == 1"));
 		return stackOut[0];
 	};
 });
