@@ -1,16 +1,6 @@
-(function(factory){
-	var deps = ["module", "heya-ice", "../main", "../preprocess",
-			"../unifiers/matchString"];
-	if(typeof define != "undefined"){ // AMD
-		define(deps, factory);
-	}else if(typeof module != "undefined"){ // node.js
-		factory.apply(null,
-			deps.filter(function(_, i){ return i < factory.length; }).
-			map(function req(name){
-				return name === "require" && require || name === "module" && module || require(name);
-			}));
-	}
-})(function(module, logger, unify, preprocess, matchString){
+/* UMD.define */ (typeof define=="function"&&define||function(d,f,m){m={module:module,require:require};module.exports=f.apply(null,d.map(function(n){return m[n]||require(n)}))})
+(["module", "heya-ice", "../main", "../preprocess", "../unifiers/matchString"],
+function(module, logger, unify, preprocess, matchString){
 	"use strict";
 
 	logger = logger.getLogger(module);

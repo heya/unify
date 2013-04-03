@@ -1,10 +1,5 @@
-(function(factory){
-	if(typeof define != "undefined"){ // AMD
-		define(["../main"], factory);
-	}else if(typeof module != "undefined"){ // node.js
-		module.exports = factory(require("../main"));
-	}
-})(function(unify){
+/* UMD.define */ (typeof define=="function"&&define||function(d,f,m){m={module:module,require:require};module.exports=f.apply(null,d.map(function(n){return m[n]||require(n)}))})
+(["../main"], function(unify){
 	"use strict";
 
 	function MatchString(regexp, matches, props){

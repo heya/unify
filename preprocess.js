@@ -1,10 +1,5 @@
-(function(factory){
-	if(typeof define != "undefined"){ // AMD
-		define(["module", "heya-ice/assert", "./main"], factory);
-	}else if(typeof module != "undefined"){ // node.js
-		module.exports = factory(module, require("heya-ice/assert"), require("./main"));
-	}
-})(function(module, logger, unify){
+/* UMD.define */ (typeof define=="function"&&define||function(d,f,m){m={module:module,require:require};module.exports=f.apply(null,d.map(function(n){return m[n]||require(n)}))})
+(["module", "heya-ice/assert", "./main"], function(module, logger, unify){
 	"use strict";
 
 	var any = unify.any, isUnifier = unify.isUnifier, open = unify.open,
