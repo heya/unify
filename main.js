@@ -103,7 +103,7 @@
 		// the next case is taken care of in unify() directly
 		// the case of unbound variable
 		//if(val === _ || val === this){
-		//	return env;
+		//	return true;
 		//}
 		if(val instanceof Var){
 			if(val.bound(env)){

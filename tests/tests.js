@@ -1,6 +1,7 @@
 /* UMD.define */ (typeof define=="function"&&define||function(d,f,m){m={module:module,require:require};module.exports=f.apply(null,d.map(function(n){return m[n]||require(n)}))})
-(["module", "heya-ice", "../main", "../preprocess", "../unifiers/matchString"],
-function(module, ice, unify, preprocess, matchString){
+(["module", "heya-ice", "../main", "../preprocess", "../unifiers/matchString",
+	"../unifiers/matchTypeOf", "../unifiers/matchInstanceOf"],
+function(module, ice, unify, preprocess, matchString, matchTypeOf, matchInstanceOf){
 	"use strict";
 
 	ice = ice.specialize(module);
@@ -245,6 +246,135 @@ function(module, ice, unify, preprocess, matchString){
 			result = unify("12345", matchString(/1(2)3/, [_, x], open({index: y})));
 			eval(TEST("result && x.get(result) === '2'"));
 			eval(TEST("result && y.get(result) === 0"));
+		},
+		function test_matchTypeOf(){
+			var result = unify(1, matchTypeOf("number"));
+			eval(TEST("result"));
+			result = unify("a", matchTypeOf("string"));
+			eval(TEST("result"));
+			result = unify(true, matchTypeOf("boolean"));
+			eval(TEST("result"));
+			result = unify(undefined, matchTypeOf("undefined"));
+			eval(TEST("result"));
+			result = unify(null, matchTypeOf("object"));
+			eval(TEST("result"));
+			result = unify([], matchTypeOf("object"));
+			eval(TEST("result"));
+			result = unify({}, matchTypeOf("object"));
+			eval(TEST("result"));
+			result = unify(function(){}, matchTypeOf("function"));
+			eval(TEST("result"));
+			result = unify("a", matchTypeOf(["number", "string", "boolean"]));
+			eval(TEST("result"));
+			result = unify(null, matchTypeOf(["function", "object"]));
+			eval(TEST("result"));
+			result = unify(unify, matchTypeOf(["function", "object"]));
+			eval(TEST("result"));
+
+			result = unify([], matchTypeOf(["number", "string", "boolean"]));
+			eval(TEST("!result"));
+			result = unify(1, matchTypeOf(["function", "object"]));
+			eval(TEST("!result"));
+		},
+		function test_matchInstanceOf(){
+			function A(){}
+
+			function B(){}
+			B.prototype = Object.create(A.prototype);
+
+			function C(){}
+			C.prototype = Object.create(B.prototype);
+
+			function D(){}
+
+			function E(){}
+			E.prototype = Object.create(D.prototype);
+
+			var result = unify(new A, matchInstanceOf(Object));
+			eval(TEST("result"));
+			result = unify(new A, matchInstanceOf(A));
+			eval(TEST("result"));
+			result = unify(new A, matchInstanceOf(B));
+			eval(TEST("!result"));
+			result = unify(new A, matchInstanceOf(C));
+			eval(TEST("!result"));
+			result = unify(new A, matchInstanceOf(D));
+			eval(TEST("!result"));
+			result = unify(new A, matchInstanceOf(E));
+			eval(TEST("!result"));
+
+			result = unify(new B, matchInstanceOf(Object));
+			eval(TEST("result"));
+			result = unify(new B, matchInstanceOf(A));
+			eval(TEST("result"));
+			result = unify(new B, matchInstanceOf(B));
+			eval(TEST("result"));
+			result = unify(new B, matchInstanceOf(C));
+			eval(TEST("!result"));
+			result = unify(new B, matchInstanceOf(D));
+			eval(TEST("!result"));
+			result = unify(new B, matchInstanceOf(E));
+			eval(TEST("!result"));
+
+			result = unify(new C, matchInstanceOf(Object));
+			eval(TEST("result"));
+			result = unify(new C, matchInstanceOf(A));
+			eval(TEST("result"));
+			result = unify(new C, matchInstanceOf(B));
+			eval(TEST("result"));
+			result = unify(new C, matchInstanceOf(C));
+			eval(TEST("result"));
+			result = unify(new C, matchInstanceOf(D));
+			eval(TEST("!result"));
+			result = unify(new C, matchInstanceOf(E));
+			eval(TEST("!result"));
+
+			result = unify(new D, matchInstanceOf(Object));
+			eval(TEST("result"));
+			result = unify(new D, matchInstanceOf(A));
+			eval(TEST("!result"));
+			result = unify(new D, matchInstanceOf(B));
+			eval(TEST("!result"));
+			result = unify(new D, matchInstanceOf(C));
+			eval(TEST("!result"));
+			result = unify(new D, matchInstanceOf(D));
+			eval(TEST("result"));
+			result = unify(new D, matchInstanceOf(E));
+			eval(TEST("!result"));
+
+			result = unify(new E, matchInstanceOf(Object));
+			eval(TEST("result"));
+			result = unify(new E, matchInstanceOf(A));
+			eval(TEST("!result"));
+			result = unify(new E, matchInstanceOf(B));
+			eval(TEST("!result"));
+			result = unify(new E, matchInstanceOf(C));
+			eval(TEST("!result"));
+			result = unify(new E, matchInstanceOf(D));
+			eval(TEST("result"));
+			result = unify(new E, matchInstanceOf(E));
+			eval(TEST("result"));
+
+			result = unify(new Date, matchInstanceOf(Object));
+			eval(TEST("result"));
+			result = unify(new Date, matchInstanceOf(Date));
+			eval(TEST("result"));
+			result = unify(new Date, matchInstanceOf(Array));
+			eval(TEST("!result"));
+
+			result = unify([], matchInstanceOf(Object));
+			eval(TEST("result"));
+			result = unify([], matchInstanceOf(Date));
+			eval(TEST("!result"));
+			result = unify([], matchInstanceOf(Array));
+			eval(TEST("result"));
+
+			result = unify({}, matchInstanceOf(Object));
+			eval(TEST("result"));
+			result = unify({}, matchInstanceOf(Date));
+			eval(TEST("!result"));
+			result = unify({}, matchInstanceOf(Array));
+			eval(TEST("!result"));
 		}
 	];
 

@@ -11,6 +11,10 @@
 	MatchString.prototype = Object.create(unify.Unifier.prototype);
 
 	MatchString.prototype.unify = function(val, ls, rs){
+		if(unify.isVariable(val)){
+			// cannot match with an unbound variable
+			return false;
+		}
 		var result = this.regexp.exec("" + val);
 		if(result){
 			if(this.matches){
