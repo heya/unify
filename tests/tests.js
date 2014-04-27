@@ -111,16 +111,36 @@ function(module, ice, unify, preprocess, matchString, matchTypeOf, matchInstance
 			result = unify(1, _);
 			eval(TEST("result && unify(result.values, {})"));
 			result = unify(1, v("x"));
-			eval(TEST("result && unify(result.values, {x: 1})"));
+			eval(TEST("result"));
+			eval(TEST("unify(result.values, {x: 1})"));
+			eval(TEST("v('x').bound(result)"));
+			eval(TEST("v('x').get(result) === 1"));
 			result = unify(v("y"), v("x"));
-			eval(TEST("result && unify(result.values, {})"));
-			eval(TEST("result && unify(result.variables, {x: {x: 1, y: 1}, y: {x: 1, y: 1}})"));
+			eval(TEST("result"));
+			eval(TEST("unify(result.values, {})"));
+			eval(TEST("unify(result.variables, {x: {x: 1, y: 1}, y: {x: 1, y: 1}})"));
+			eval(TEST("!v('x').bound(result)"));
+			eval(TEST("!v('y').bound(result)"));
+			eval(TEST("v('x').alias('y', result)"));
+			eval(TEST("v('y').alias('x', result)"));
+			eval(TEST("!v('x').alias('z', result)"));
+			eval(TEST("!v('y').alias('z', result)"));
 			result = unify(v("y"), _);
 			eval(TEST("result && unify(result.values, {})"));
 			result = unify([1, v("x")], [v("y"), 2]);
-			eval(TEST("result && unify(result.values, {x: 2, y: 1})"));
+			eval(TEST("result"));
+			eval(TEST("unify(result.values, {x: 2, y: 1})"));
+			eval(TEST("v('x').bound(result)"));
+			eval(TEST("v('x').get(result) === 2"));
+			eval(TEST("v('y').bound(result)"));
+			eval(TEST("v('y').get(result) === 1"));
 			result = unify({a: 1, b: v("x")}, {a: v("y"), b: 2});
-			eval(TEST("result && unify(result.values, {x: 2, y: 1})"));
+			eval(TEST("result"));
+			eval(TEST("unify(result.values, {x: 2, y: 1})"));
+			eval(TEST("v('x').bound(result)"));
+			eval(TEST("v('x').get(result) === 2"));
+			eval(TEST("v('y').bound(result)"));
+			eval(TEST("v('y').get(result) === 1"));
 			result = unify({a: 1, b: v("x")}, {a: v("y"), c: 2});
 			eval(TEST("!result"));
 			result = unify({c: 1, b: v("x")}, {a: v("y"), b: 2});
@@ -151,22 +171,25 @@ function(module, ice, unify, preprocess, matchString, matchTypeOf, matchInstance
 		function test_soft_structures(){
 			var x = v("x");
 			var result = unify([soft({a: 1}), soft({b: 2})], soft([x, x]));
-			eval(TEST("result && isSoft(x.get(result))"));
-			eval(TEST("result && x.get(result).type === 'soft'"));
-			eval(TEST("result && unify(x.get(result).object, {a: 1, b: 2})"));
+			eval(TEST("result"));
+			eval(TEST("isSoft(x.get(result))"));
+			eval(TEST("x.get(result).type === 'soft'"));
+			eval(TEST("unify(x.get(result).object, {a: 1, b: 2})"));
 			result = unify([soft({a: 1}), x], soft([x, soft({b: 2})]));
-			eval(TEST("result && isSoft(x.get(result))"));
-			eval(TEST("result && x.get(result).type === 'soft'"));
-			eval(TEST("result && unify(x.get(result).object, {a: 1, b: 2})"));
+			eval(TEST("result"));
+			eval(TEST("isSoft(x.get(result))"));
+			eval(TEST("x.get(result).type === 'soft'"));
+			eval(TEST("unify(x.get(result).object, {a: 1, b: 2})"));
 		},
 		function test_soft_presets(){
 			var x = v("x"), env = unify(x, soft({}));
 			var result = unify([1], [x], env);
 			eval(TEST("!result"));
 			result = unify([open({a: 1}), open({b: 2})], [x, x], env);
-			eval(TEST("result && isSoft(x.get(result))"));
-			eval(TEST("result && x.get(result).type === 'soft'"));
-			eval(TEST("result && unify(x.get(env).object, {a: 1, b: 2})"));
+			eval(TEST("result"));
+			eval(TEST("isSoft(x.get(result))"));
+			eval(TEST("x.get(result).type === 'soft'"));
+			eval(TEST("unify(x.get(env).object, {a: 1, b: 2})"));
 		},
 		function test_complex_structures(){
 			var x = v("x"), y = v("y");
@@ -194,8 +217,9 @@ function(module, ice, unify, preprocess, matchString, matchTypeOf, matchInstance
 				left: open({left: y}),
 				right: open({right: y})
 			});
-			eval(TEST("result && x.get(result) === 0"));
-			eval(TEST("result && unify(y.get(result), {value: 3})"));
+			eval(TEST("result"));
+			eval(TEST("x.get(result) === 0"));
+			eval(TEST("unify(y.get(result), {value: 3})"));
 		},
 		function test_preprocess(){
 			var l = {
@@ -239,13 +263,14 @@ function(module, ice, unify, preprocess, matchString, matchTypeOf, matchInstance
 			var x = v("x"), y = v("y");
 			result = unify("12345", matchString(/1(2)3/, x, y));
 			eval(TEST("result"));
-			eval(TEST("result && unify(x.get(result), ['123', '2'])"));
-			eval(TEST("result && unify(y.get(result), {index: 0, input: '12345'})"));
-			eval(TEST("result && unify(y.get(result), open({index: 0}))"));
+			eval(TEST("unify(x.get(result), ['123', '2'])"));
+			eval(TEST("unify(y.get(result), {index: 0, input: '12345'})"));
+			eval(TEST("unify(y.get(result), open({index: 0}))"));
 			//
 			result = unify("12345", matchString(/1(2)3/, [_, x], open({index: y})));
-			eval(TEST("result && x.get(result) === '2'"));
-			eval(TEST("result && y.get(result) === 0"));
+			eval(TEST("result"));
+			eval(TEST("x.get(result) === '2'"));
+			eval(TEST("y.get(result) === 0"));
 		},
 		function test_matchTypeOf(){
 			var result = unify(1, matchTypeOf("number"));

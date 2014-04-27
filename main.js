@@ -91,6 +91,10 @@
 	Var.prototype.bound = function(env){
 		return env.values.hasOwnProperty(this.name);
 	};
+	Var.prototype.alias = function(name, env){
+		var t = env.variables[this.name];
+		return t && t[name];
+	};
 	Var.prototype.get = function(env){
 		return env.values[this.name];
 	};
@@ -393,21 +397,21 @@
 			}
 			// process variables (variables have priority)
 			if(l && l instanceof Var){
-				 if(l.unify(r, ls, rs, env)) continue;
-				 return null;
+				if(l.unify(r, ls, rs, env)) continue;
+				return null;
 			}
 			if(r && r instanceof Var){
-				 if(r.unify(l, ls, rs, env)) continue;
-				 return null;
+				if(r.unify(l, ls, rs, env)) continue;
+				return null;
 			}
 			// invoke custom unifiers
 			if(l && l instanceof Unifier){
-				 if(l.unify(r, ls, rs, env)) continue;
-				 return null;
+				if(l.unify(r, ls, rs, env)) continue;
+				return null;
 			}
 			if(r && r instanceof Unifier){
-				 if(r.unify(l, ls, rs, env)) continue;
-				 return null;
+				if(r.unify(l, ls, rs, env)) continue;
+				return null;
 			}
 			// check rough types
 			if(typeof l != typeof r){
