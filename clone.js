@@ -60,11 +60,11 @@
 					}
 				},
 				Date,
-				function(s){
+				function processDate(s){
 					stackOut.push(new Date(s.getTime()));
 				},
 				RegExp,
-				function(s){
+				function processRegExp(s){
 					stackOut.push(new RegExp(s.source,
 							(s.global ? "g" : "") +
 							(s.multiline ? "m" : "") +

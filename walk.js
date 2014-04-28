@@ -32,10 +32,10 @@
 	function walk(o, opt){
 		// non-recursive stack-based walk about an object tree
 		opt = opt || empty;
-		var procObject   = opt.processObject || processObject,
-			procOther    = opt.processOther  || nop,
-			registry     = opt.registry      || defaultRegistry,
-			stack        = [o];
+		var doObject = opt.processObject || processObject,
+			doOther  = opt.processOther  || nop,
+			registry = opt.registry      || defaultRegistry,
+			stack    = [o];
 		main: while(stack.length){
 			o = stack.pop();
 			if(o && typeof o == "object"){
@@ -52,10 +52,10 @@
 					}
 				}
 				// process naked objects
-				procObject(o, stack);
+				doObject(o, stack);
 				continue;
 			}
-			procOther(o, stack);
+			doOther(o, stack);
 		}
 	}
 

@@ -1,4 +1,6 @@
-# Unify [![Build Status](https://travis-ci.org/heya/unify.png?branch=master)](https://travis-ci.org/heya/unify)
+# Unify
+
+[![Build Status](https://travis-ci.org/heya/unify.png?branch=master)](https://travis-ci.org/heya/unify)
 
 Unify: a unification tool with a deep equivalence and partitioning of objects.
 
