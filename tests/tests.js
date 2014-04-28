@@ -1,7 +1,7 @@
 /* UMD.define */ (typeof define=="function"&&define||function(d,f,m){m={module:module,require:require};module.exports=f.apply(null,d.map(function(n){return m[n]||require(n)}))})
 (["module", "heya-ice", "../main", "../preprocess", "../unifiers/matchString",
-	"../unifiers/matchTypeOf", "../unifiers/matchInstanceOf"],
-function(module, ice, unify, preprocess, matchString, matchTypeOf, matchInstanceOf){
+	"../unifiers/matchTypeOf", "../unifiers/matchInstanceOf", "../walk", "../clone"],
+function(module, ice, unify, preprocess, matchString, matchTypeOf, matchInstanceOf, walk, clone){
 	"use strict";
 
 	ice = ice.specialize(module);
@@ -194,29 +194,29 @@ function(module, ice, unify, preprocess, matchString, matchTypeOf, matchInstance
 		function test_complex_structures(){
 			var x = v("x"), y = v("y");
 			var tree = {
-				value: 0,
-				left: {
-					value: 1,
+					value: 0,
 					left: {
-						value: 3
+						value: 1,
+						left: {
+							value: 3
+						},
+						right: {
+							value: 4
+						}
 					},
 					right: {
-						value: 4
+						value: 2,
+						left: null,
+						right: {
+							value: 3
+						}
 					}
-				},
-				right: {
-					value: 2,
-					left: null,
-					right: {
-						value: 3
-					}
-				}
-			};
+				};
 			var result = unify(tree, {
-				value: x,
-				left: open({left: y}),
-				right: open({right: y})
-			});
+					value: x,
+					left: open({left: y}),
+					right: open({right: y})
+				});
 			eval(TEST("result"));
 			eval(TEST("x.get(result) === 0"));
 			eval(TEST("unify(y.get(result), {value: 3})"));
@@ -400,6 +400,71 @@ function(module, ice, unify, preprocess, matchString, matchTypeOf, matchInstance
 			eval(TEST("!result"));
 			result = unify({}, matchInstanceOf(Array));
 			eval(TEST("!result"));
+		},
+		function test_walk(){
+			var result = {};
+			walk({
+				a: [1, true, [0, NaN, Infinity, Math.sin]],
+				b: ["hello!", new Date, /\d+/, {g: undefined}],
+				c: null,
+				d: {
+					e: [],
+					f: {}
+				}
+			}, {
+				processOther: function(s){
+					var t = typeof s;
+					if(typeof result[t] != "number"){
+						result[t] = 0;
+					}
+					++result[t];
+				}
+			});
+			var expected = {
+					'boolean': 1, 'number': 4, 'string': 1,
+					'function': 1, 'object': 1, 'undefined': 1
+				};
+			eval(TEST("unify(result, expected)"));
+		},
+		function test_clone(){
+			var source = {
+					a: [1, true, [0, NaN, Infinity, Math.sin]],
+					b: ["hello!", new Date, /\d+/, {g: undefined}],
+					c: null,
+					d: {
+						e: [],
+						f: {}
+					}
+				};
+			var result = clone(source);
+			eval(TEST("result !== source"));
+			eval(TEST("unify(result, source)"));
+			var left = v("left"), right = v("right");
+			var env = unify({left: left, right: right}, {
+					left:  {left: 1, right: 2},
+					right: {left: 8, right: 9}
+				});
+			result = clone({
+				left: {
+					left:  left,
+					right: {left: 3, right: 4}
+				},
+				right: {
+					left:  {left: 6, right: 7},
+					right: right
+				}
+			}, env);
+			var expected = {
+					left: {
+						left:  {left: 1, right: 2},
+						right: {left: 3, right: 4}
+					},
+					right: {
+						left:  {left: 6, right: 7},
+						right: {left: 8, right: 9}
+					}
+				};
+			eval(TEST("unify(result, expected)"));
 		}
 	];
 

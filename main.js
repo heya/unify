@@ -445,6 +445,7 @@
 	unify.registry = registry;
 	unify.Env = Env;
 	unify.Unifier = Unifier;
+	unify.Variable = Var;
 	unify.variable = variable;
 	unify.open = open;
 	unify.soft = soft;
