@@ -1,7 +1,7 @@
 /* UMD.define */ (typeof define=="function"&&define||function(d,f,m){m={module:module,require:require};module.exports=f.apply(null,d.map(function(n){return m[n]||require(n)}))})
 (["module", "heya-ice", "../main", "../preprocess", "../unifiers/matchString",
-	"../unifiers/matchTypeOf", "../unifiers/matchInstanceOf", "../walk", "../clone", "../assemble"],
-function(module, ice, unify, preprocess, matchString, matchTypeOf, matchInstanceOf, walk, clone, assemble){
+	"../unifiers/matchTypeOf", "../unifiers/matchInstanceOf", "../walk", "../clone", "../assemble", "../Ref"],
+function(module, ice, unify, preprocess, matchString, matchTypeOf, matchInstanceOf, walk, clone, assemble, Ref){
 	"use strict";
 
 	ice = ice.specialize(module);
@@ -484,6 +484,26 @@ function(module, ice, unify, preprocess, matchString, matchTypeOf, matchInstance
 			eval(TEST("result !== source"));
 			eval(TEST("unify(result, source, env)"));
 			eval(TEST("unify(result, {z: {x: [{y: false}]}})"));
+		},
+		function test_Ref(){
+			var source = {
+					left:  {left: 1, right: 2},
+					right: {left: 3, right: 4}
+				},
+				pattern = {
+					left:  new Ref(v("lnode"), {left: 1, right: v("right")}),
+					right: new Ref("rnode",    {left: v("left"), right: 4})
+				};
+			var env = unify(pattern, source);
+			eval(TEST("env"));
+			eval(TEST("v('left').bound(env)"));
+			eval(TEST("v('left').get(env) === 3"));
+			eval(TEST("v('right').bound(env)"));
+			eval(TEST("v('right').get(env) === 2"));
+			eval(TEST("v('lnode').bound(env)"));
+			eval(TEST("unify(v('lnode'), {left: 1, right: 2})"));
+			eval(TEST("v('rnode').bound(env)"));
+			eval(TEST("unify(v('rnode'), {left: 3, right: 4})"));
 		}
 	];
 

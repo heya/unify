@@ -85,7 +85,6 @@
 	function Var(name){
 		this.name = name || ("var" + unique++);
 	}
-
 	Var.prototype = Object.create(Unifier.prototype);
 
 	Var.prototype.bound = function(env){
