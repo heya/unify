@@ -1,7 +1,7 @@
 /* UMD.define */ (typeof define=="function"&&define||function(d,f,m){m={module:module,require:require};module.exports=f.apply(null,d.map(function(n){return m[n]||require(n)}))})
 (["module", "heya-ice", "../main", "../preprocess", "../unifiers/matchString",
-	"../unifiers/matchTypeOf", "../unifiers/matchInstanceOf", "../walk", "../clone"],
-function(module, ice, unify, preprocess, matchString, matchTypeOf, matchInstanceOf, walk, clone){
+	"../unifiers/matchTypeOf", "../unifiers/matchInstanceOf", "../walk", "../clone", "../assemble"],
+function(module, ice, unify, preprocess, matchString, matchTypeOf, matchInstanceOf, walk, clone, assemble){
 	"use strict";
 
 	ice = ice.specialize(module);
@@ -465,6 +465,25 @@ function(module, ice, unify, preprocess, matchString, matchTypeOf, matchInstance
 					}
 				};
 			eval(TEST("unify(result, expected)"));
+		},
+		function test_assemble(){
+			var source = {
+					a: [1,,null],
+					b: {c: "hey"}
+				};
+			var result = assemble(source);
+			eval(TEST("result === source"));
+			eval(TEST("unify(result, source)"));
+			source = {x: [{y: false}]};
+			var env = unify(v("x"), source);
+			eval(TEST("v('x').bound(env)"));
+			eval(TEST("v('x').get(env) === source"));
+			eval(TEST("unify(v('x').get(env), source)"));
+			source = {z: v("x")};
+			result = assemble(source, env);
+			eval(TEST("result !== source"));
+			eval(TEST("unify(result, source, env)"));
+			eval(TEST("unify(result, {z: {x: [{y: false}]}})"));
 		}
 	];
 
