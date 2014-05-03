@@ -504,6 +504,71 @@ function(module, ice, unify, preprocess, matchString, matchTypeOf, matchInstance
 			eval(TEST("unify(v('lnode'), {left: 1, right: 2})"));
 			eval(TEST("v('rnode').bound(env)"));
 			eval(TEST("unify(v('rnode'), {left: 3, right: 4})"));
+		},
+		function test_unifiers(){
+			var counter = 0;
+			function Foo(name){
+				this.counter = ++counter;
+				this.name = name;
+				this.flag = true;
+			}
+			var l = {x: new Foo("Sam"), y: new Foo("Mary")},
+				r = {x: new Foo("Sam"), y: new Foo("Mary")};
+			eval(TEST("counter === 4"));
+			// delayed unifier
+			unify.unifiers.push(
+				function test(l, r){
+					return l.flag || r.flag;
+				},
+				function unify(l, r, ls, rs, env){
+					if(!l.flag || !r.flag){
+						return false;
+					}
+					ls.push(l.name);
+					rs.push(r.name);
+					return true;
+				}
+			);
+			eval(TEST("unify(l, r)"));
+			unify.unifiers.pop();
+			unify.unifiers.pop();
+			// immediate unifier
+			unify.unifiers.push(
+				function test(l, r){
+					return l.flag || r.flag;
+				},
+				function unify(l, r, ls, rs, env){
+					if(!l.flag || !r.flag){
+						return false;
+					}
+					return l.name === r.name;
+				}
+			);
+			eval(TEST("unify(l, r)"));
+			unify.unifiers.pop();
+			unify.unifiers.pop();
+			// no custom unifiers
+			eval(TEST("!unify(l, r)"));
+			// instanceof-based custom unifier
+			unify.registry.push(
+				Foo,
+				function unify(l, r, ls, rs, env){
+					if(typeof r == "string"){
+						ls.push(l.name);
+						rs.push(r);
+						return true;
+					}
+					if(!r.flag){
+						return false;
+					}
+					ls.push(l.name);
+					rs.push(r.name);
+					return true;
+				}
+			);
+			eval(TEST("unify(l, r)"));
+			unify.registry.pop();
+			unify.registry.pop();
 		}
 	];
 
