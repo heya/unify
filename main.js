@@ -310,17 +310,13 @@
 				soft: {
 					update: function(){
 						for(var k in this.l){
-							if(this.l.hasOwnProperty(k)){
-								if(!this.r.hasOwnProperty(k)){
-									this.r[k] = this.l[k];
-								}
+							if(this.l.hasOwnProperty(k) && !this.r.hasOwnProperty(k)){
+								this.r[k] = this.l[k];
 							}
 						}
 						for(k in this.r){
-							if(this.r.hasOwnProperty(k)){
-								if(!this.l.hasOwnProperty(k)){
-									this.l[k] = this.r[k];
-								}
+							if(this.r.hasOwnProperty(k) && !this.l.hasOwnProperty(k)){
+								this.l[k] = this.r[k];
 							}
 						}
 					}
@@ -331,12 +327,11 @@
 		function(l, r, ls, rs){
 			for(var k in r){
 				if(r.hasOwnProperty(k)){
-					if(l.hasOwnProperty(k)){
-						ls.push(l[k]);
-						rs.push(r[k])
-					}else{
+					if(!l.hasOwnProperty(k)){
 						return false;
 					}
+					ls.push(l[k]);
+					rs.push(r[k])
 				}
 			}
 			return true;
@@ -344,11 +339,9 @@
 	objectOps.open.open.compare = objectOps.open.soft.compare = objectOps.soft.soft.compare =
 		function(l, r, ls, rs){
 			for(var k in r){
-				if(r.hasOwnProperty(k)){
-					if(l.hasOwnProperty(k)){
-						ls.push(l[k]);
-						rs.push(r[k])
-					}
+				if(r.hasOwnProperty(k) && l.hasOwnProperty(k)){
+					ls.push(l[k]);
+					rs.push(r[k])
 				}
 			}
 			return true;
@@ -356,10 +349,8 @@
 	objectOps.exact.soft.update = objectOps.open.soft.update =
 		function(){
 			for(var k in this.l){
-				if(this.l.hasOwnProperty(k)){
-					if(!this.r.hasOwnProperty(k)){
-						this.r[k] = this.l[k];
-					}
+				if(this.l.hasOwnProperty(k) && !this.r.hasOwnProperty(k)){
+					this.r[k] = this.l[k];
 				}
 			}
 		};
@@ -382,7 +373,7 @@
 
 	function unify(l, r, env){
 		env = env || new Env();
-		var ls = [l], rs = [r];
+		var ls = [l], rs = [r], objectType = env.objectType ? "open" : "exact";
 		main: while(ls.length){
 			// perform a command, or extract a pair
 			l = ls.pop();
@@ -433,8 +424,7 @@
 				}
 			}
 			// process naked objects
-			if(!unifyObjects(l, env.objectType ? "open" : "exact", null,
-				r, env.objectType ? "open" : "exact", null, ls, rs, env)) return null;
+			if(!unifyObjects(l, objectType, null, r, objectType, null, ls, rs, env)) return null;
 		}
 		return env;
 	}

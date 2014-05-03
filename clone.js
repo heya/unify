@@ -1,6 +1,8 @@
 /* UMD.define */ (typeof define=="function"&&define||function(d,f,m){m={module:module,require:require};module.exports=f.apply(null,d.map(function(n){return m[n]||require(n)}))})
-(["./main", "./walk"], function(unify, walk){
+(["module", "heya-ice/assert", "./main", "./walk"], function(module, ice, unify, walk){
 	"use strict";
+
+	ice = ice.specialize(module);
 
 	var empty = {};
 
@@ -81,6 +83,7 @@
 			registry:      opt.registry ? opt.registry.concat(registry) : registry
 		});
 
+		ice.assert(stackOut.length == 1);
 		return stackOut[0];
 	};
 });
