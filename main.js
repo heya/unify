@@ -386,20 +386,20 @@
 				continue;
 			}
 			// process variables (variables have priority)
-			if(l && l instanceof Var){
+			if(l instanceof Var){
 				if(l.unify(r, ls, rs, env)) continue;
 				return null;
 			}
-			if(r && r instanceof Var){
+			if(r instanceof Var){
 				if(r.unify(l, ls, rs, env)) continue;
 				return null;
 			}
 			// invoke custom unifiers
-			if(l && l instanceof Unifier){
+			if(l instanceof Unifier){
 				if(l.unify(r, ls, rs, env)) continue;
 				return null;
 			}
-			if(r && r instanceof Unifier){
+			if(r instanceof Unifier){
 				if(r.unify(l, ls, rs, env)) continue;
 				return null;
 			}
