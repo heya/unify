@@ -11,8 +11,8 @@
 	Ref.prototype = Object.create(Var.prototype);
 
 	Ref.prototype.unify = function(val, ls, rs, env){
-		ls.push(this.variable, this.variable);
-		rs.push(val, this.value);
+		ls.push(this.value, this.variable);
+		rs.push(val, val);
 		return true;
 	};
 
