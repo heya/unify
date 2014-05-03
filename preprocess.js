@@ -1,82 +1,70 @@
 /* UMD.define */ (typeof define=="function"&&define||function(d,f,m){m={module:module,require:require};module.exports=f.apply(null,d.map(function(n){return m[n]||require(n)}))})
-(["module", "heya-ice/assert", "./main"], function(module, ice, unify){
+(["module", "heya-ice/assert", "./main", "./walk"], function(module, ice, unify, walk){
 	"use strict";
 
-	var any = unify.any, isUnifier = unify.isUnifier, open = unify.open,
-		ice = ice.specialize(module);
+	ice = ice.specialize(module);
 
-	function identity(x){ return x; }
+	return function preprocess(source, nonExactObjects, nonExactArrays){
 
-	function Command(f, pattern){
-		this.f = f;
-		this.p = pattern;
-	}
+		var wrapObject = nonExactObjects && unify.open,
+			wrapArray  = nonExactArrays  && unify.open,
+			stackOut = [];
 
-	function assembleArray(wrap){
-		return function(stackOut){
-			var array = [], pattern = this.p;
-			for(var i = 0; i < pattern.length; ++i){
-				if(pattern.hasOwnProperty(i)){
-					array[i] = stackOut.pop();
+		function postArray(){
+			var t = [];
+			for(var i = 0, s = this.s, l = s.length; i < l; ++i){
+				if(s.hasOwnProperty(i)){
+					t[i] = stackOut.pop();
 				}
 			}
-			stackOut.push(wrap(array));
+			stackOut.push(wrapArray ? wrapArray(t) : t);
 		}
-	}
 
-	function assembleObject(wrap){
-		return function(stackOut){
-			var object = {}, pattern = this.p;
-			for(var k in pattern){
-				if(pattern.hasOwnProperty(k)){
-					object[k] = stackOut.pop();
+		function postObject(){
+			var t = {}, s = this.s;
+			for(var k in s){
+				if(s.hasOwnProperty(k)){
+					t[k] = stackOut.pop();
 				}
 			}
-			stackOut.push(wrap(object));
-		};
-	}
-
-	return function preprocess(o, nonExactObjects, nonExactArrays){
-		if(!nonExactArrays && !nonExactObjects){
-			return o;
+			stackOut.push(wrapObject ? wrapObject(t) : t);
 		}
 
-		// non-recursive stack-based processing of an object tree
-		var stackIn = [o], stackOut = [];
-		while(stackIn.length){
-			var x = stackIn.pop();
-			// eliminate all non-processed objects
-			if(!x || typeof x != "object" || x instanceof Date || x instanceof RegExp ||
-					x === any || isUnifier(x)){
-				stackOut.push(x);
-				continue;
+		function processObject(s, stack){
+			stack.push(new (walk.Command)(postObject, s));
+			for(var k in s){
+				if(s.hasOwnProperty(k)){
+					stack.push(s[k]);
+				}
 			}
-			// process commands
-			if(x instanceof Command){
-				x.f(stackOut);
-				continue;
-			}
-			// process naked arrays
-			if(x instanceof Array){
-				stackIn.push(new Command(assembleArray(nonExactArrays ? open : identity), x));
-				for(var i = 0; i < x.length; ++i){
-					if(x.hasOwnProperty(i)){
-						stackIn.push(x[i]);
+		}
+
+		function processOther(s){
+			stackOut.push(s);
+		}
+
+		var registry = [
+				Array,
+				function processArray(s, stack){
+					stack.push(new (walk.Command)(postArray, s));
+					for(var i = 0, l = s.length; i < l; ++i){
+						if(s.hasOwnProperty(i)){
+							stack.push(s[i]);
+						}
 					}
-				}
-				continue;
-			}
-			// process naked objects
-			stackIn.push(new Command(assembleObject(nonExactObjects ? open : identity), x));
-			for(var k in x){
-				if(x.hasOwnProperty(k)){
-					stackIn.push(x[k]);
-				}
-			}
-		}
+				},
+				unify.Variable, processOther,
+				Date,           processOther,
+				RegExp,         processOther
+			];
 
-		// result
-		eval(ice.assert("stackOut.length == 1"));
+		walk(source, {
+			processObject: processObject,
+			processOther:  processOther,
+			registry:      registry
+		});
+
+		ice.assert(stackOut.length == 1);
 		return stackOut[0];
 	};
 });
