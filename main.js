@@ -14,6 +14,7 @@
 	}
 
 	Env.prototype = {
+		declaredClass: "unify/Env",
 		bindVar: function(name1, name2){
 			var vars = this.variables, u, t, k;
 			if(vars.hasOwnProperty(name1)){
@@ -61,10 +62,12 @@
 		this.l = l;
 		this.r = r;
 	}
+	Command.prototype.declaredClass = "unify/Command";
 
 	// Custom unifier
 
 	function Unifier(){}
+	Unifier.prototype.declaredClass = "unify/Unifier";
 
 	function isUnifier(x){
 		return x && x instanceof Unifier;
@@ -86,6 +89,7 @@
 		this.name = name || ("var" + unique++);
 	}
 	Var.prototype = Object.create(Unifier.prototype);
+	Var.prototype.declaredClass = "unify/Var";
 
 	Var.prototype.bound = function(env){
 		return env.values.hasOwnProperty(this.name);
@@ -97,6 +101,7 @@
 	Var.prototype.get = function(env){
 		return env.values[this.name];
 	};
+
 	Var.prototype.unify = function(val, ls, rs, env){
 		if(this.bound(env)){
 			ls.push(this.get(env));
@@ -134,8 +139,8 @@
 		this.type = type;
 		this.object = o;
 	}
-
 	Wrap.prototype = Object.create(Unifier.prototype);
+	Wrap.prototype.declaredClass = "unify/Wrap";
 
 	Wrap.prototype.unify = function(val, ls, rs, env){
 		var ops;
@@ -289,9 +294,7 @@
 				exact: {
 					precheck: function(l, r){
 						for(var k in l){
-							if(l.hasOwnProperty(k)){
-								if(!r.hasOwnProperty(k)) return false;
-							}
+							if(l.hasOwnProperty(k) && !r.hasOwnProperty(k)) return false;
 						}
 						return true;
 					}

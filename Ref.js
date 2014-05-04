@@ -9,6 +9,7 @@
 		this.value = value;
 	}
 	Ref.prototype = Object.create(Var.prototype);
+	Ref.prototype.declaredClass = "unify/Ref";
 
 	Ref.prototype.unify = function(val, ls, rs, env){
 		ls.push(this.value, this.variable);
