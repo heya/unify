@@ -16,6 +16,16 @@
 		return true;
 	};
 
+	Ref.prototype.bound = function(env){
+		return this.variable.bound(env);
+	};
+	Ref.prototype.alias = function(name, env){
+		return this.variable.alias(name, env);
+	};
+	Ref.prototype.get = function(env){
+		return this.variable.get(env);
+	};
+
 	Ref.ref = function(variable, value){ return new Ref(variable, value); }
 
 	return Ref;
