@@ -1,6 +1,6 @@
 {
   "name": "heya-unify",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "description": "Unify: a unification tool with a deep equivalence and partitioning of objects.",
   "main": "unify.js",
   "directories": {
@@ -26,5 +26,11 @@
     "code construction"
   ],
   "author": "Eugene Lazutkin <eugene.lazutkin@gmail.com> (http://lazutkin.com/)",
-  "license": "BSD"
+  "license": "BSD",
+  "volo": {
+    "type": "directory",
+    "dependencies": {
+      "heya-ice": "github:heya/ice"
+    }
+  }
 }
