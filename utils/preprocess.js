@@ -1,5 +1,5 @@
 /* UMD.define */ (typeof define=="function"&&define||function(d,f,m){m={module:module,require:require};module.exports=f.apply(null,d.map(function(n){return m[n]||require(n)}))})
-(["module", "heya-ice/assert", "./unify", "./walk"], function(module, ice, unify, walk){
+(["module", "heya-ice/assert", "../unify", "./walk"], function(module, ice, unify, walk){
 	"use strict";
 
 	ice = ice.specialize(module);

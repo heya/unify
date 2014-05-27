@@ -1,7 +1,8 @@
 /* UMD.define */ (typeof define=="function"&&define||function(d,f,m){m={module:module,require:require};module.exports=f.apply(null,d.map(function(n){return m[n]||require(n)}))})
-(["module", "heya-ice", "../unify", "../preprocess", "../unifiers/matchString",
-	"../unifiers/matchTypeOf", "../unifiers/matchInstanceOf", "../walk", "../clone", "../assemble", "../Ref"],
-function(module, ice, unify, preprocess, matchString, matchTypeOf, matchInstanceOf, walk, clone, assemble, Ref){
+(["module", "heya-ice", "../unify", "../utils/preprocess", "../unifiers/matchString",
+	"../unifiers/matchTypeOf", "../unifiers/matchInstanceOf", "../unifiers/Ref",
+	"../utils/walk", "../utils/clone", "../utils/assemble"],
+function(module, ice, unify, preprocess, matchString, matchTypeOf, matchInstanceOf, Ref, walk, clone, assemble){
 	"use strict";
 
 	ice = ice.specialize(module);
