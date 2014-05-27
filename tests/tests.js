@@ -1,5 +1,5 @@
 /* UMD.define */ (typeof define=="function"&&define||function(d,f,m){m={module:module,require:require};module.exports=f.apply(null,d.map(function(n){return m[n]||require(n)}))})
-(["module", "heya-ice", "../unify", "../utils/preprocess", "../unifiers/matchString",
+(["module", "heya-ice", "../main", "../utils/preprocess", "../unifiers/matchString",
 	"../unifiers/matchTypeOf", "../unifiers/matchInstanceOf", "../unifiers/ref",
 	"../utils/walk", "../utils/clone", "../utils/assemble", "../utils/replace"],
 function(module, ice, unify, preprocess, matchString, matchTypeOf, matchInstanceOf, ref,

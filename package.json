@@ -1,8 +1,8 @@
 {
   "name": "heya-unify",
-  "version": "0.1.13",
+  "version": "0.1.14",
   "description": "Unify: a unification tool with a deep equivalence and partitioning of objects.",
-  "main": "unify.js",
+  "main": "main.js",
   "directories": {
     "test": "tests"
   },
