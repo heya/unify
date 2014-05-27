@@ -1,8 +1,8 @@
 /* UMD.define */ (typeof define=="function"&&define||function(d,f,m){m={module:module,require:require};module.exports=f.apply(null,d.map(function(n){return m[n]||require(n)}))})
 (["module", "heya-ice", "../unify", "../utils/preprocess", "../unifiers/matchString",
-	"../unifiers/matchTypeOf", "../unifiers/matchInstanceOf", "../unifiers/Ref",
+	"../unifiers/matchTypeOf", "../unifiers/matchInstanceOf", "../unifiers/ref",
 	"../utils/walk", "../utils/clone", "../utils/assemble", "../utils/replace"],
-function(module, ice, unify, preprocess, matchString, matchTypeOf, matchInstanceOf, Ref,
+function(module, ice, unify, preprocess, matchString, matchTypeOf, matchInstanceOf, ref,
 		walk, clone, assemble, replace){
 	"use strict";
 
@@ -493,8 +493,8 @@ function(module, ice, unify, preprocess, matchString, matchTypeOf, matchInstance
 					right: {left: 3, right: 4}
 				},
 				pattern = {
-					left:  new Ref(v("lnode"), {left: 1, right: v("right")}),
-					right: new Ref("rnode",    {left: v("left"), right: 4})
+					left:  ref(v("lnode"), {left: 1, right: v("right")}),
+					right: ref("rnode",    {left: v("left"), right: 4})
 				};
 			var env = unify(pattern, source);
 			eval(TEST("env"));

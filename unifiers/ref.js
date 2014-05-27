@@ -7,6 +7,7 @@
 	function Ref(variable, value){
 		this.variable = typeof variable == "string" ? new Var(variable) : variable;
 		this.value = value;
+		Var.call(this, this.variable.name);
 	}
 	Ref.prototype = Object.create(Var.prototype);
 	Ref.prototype.declaredClass = "unify/Ref";
@@ -17,17 +18,10 @@
 		return true;
 	};
 
-	Ref.prototype.bound = function(env){
-		return this.variable.bound(env);
-	};
-	Ref.prototype.alias = function(name, env){
-		return this.variable.alias(name, env);
-	};
-	Ref.prototype.get = function(env){
-		return this.variable.get(env);
-	};
+	function ref(variable, value){
+		return new Ref(variable, value);
+	}
+	ref.Ref = Ref;
 
-	Ref.ref = function(variable, value){ return new Ref(variable, value); }
-
-	return Ref;
+	return ref;
 });
