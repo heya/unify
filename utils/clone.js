@@ -76,7 +76,8 @@
 						(val.ignoreCase ? "i" : "")
 					));
 			}
-		];
+		],
+		filters = [];
 
 	function processOther(val, context){
 		context.stackOut.push(val);
@@ -94,13 +95,16 @@
 		walk(source, {
 			processObject: opt.processObject || processObject,
 			processOther:  opt.processOther  || processOther,
-			registry:      opt.registry ? opt.registry.concat(registry) : registry,
+			registry:      opt.registry || clone.registry,
+			filters:       opt.filters  || clone.filters,
 			context:       context
 		});
 
 		ice.assert(stackOut.length == 1);
 		return stackOut[0];
 	}
+	clone.registry = registry;
+	clone.filters  = filters;
 
 	return clone;
 });

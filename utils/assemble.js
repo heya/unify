@@ -107,7 +107,8 @@
 			},
 			Date,   processOther,
 			RegExp, processOther
-		];
+		],
+		filters = [];
 
 	function assemble(source, env, opt){
 		opt = opt || empty;
@@ -119,13 +120,16 @@
 		walk(source, {
 			processObject: opt.processObject || processObject,
 			processOther:  opt.processOther  || processOther,
-			registry:      opt.registry ? opt.registry.concat(registry) : registry,
+			registry:      opt.registry || assemble.registry,
+			filters:       opt.filters  || assemble.filters,
 			context:       context
 		});
 
 		ice.assert(stackOut.length == 1);
 		return stackOut[0];
 	}
+	assemble.registry = registry;
+	assemble.filters  = filters;
 
 	return assemble;
 });

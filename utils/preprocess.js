@@ -4,6 +4,8 @@
 
 	ice = ice.specialize(module);
 
+	var empty = {};
+
 	function postArray(context){
 		var stackOut = context.stackOut, wrapArray = context.wrapArray, t = [];
 		for(var i = 0, s = this.s, l = s.length; i < l; ++i){
@@ -60,15 +62,19 @@
 			unify.Variable, processOther,
 			Date,           processOther,
 			RegExp,         processOther
-		];
+		],
+		filters = [];
 
-	function preprocess(source, nonExactObjects, nonExactArrays){
+	function preprocess(source, nonExactObjects, nonExactArrays, opt){
+		opt = opt || empty;
+
 		var stackOut = [];
 
 		walk(source, {
-			processObject: processObject,
-			processOther:  processOther,
-			registry:      registry,
+			processObject: opt.processObject || processObject,
+			processOther:  opt.processOther  || processOther,
+			registry:      opt.registry || preprocess.registry,
+			filters:       opt.filters  || preprocess.filters,
 			context: {
 				wrapObject: nonExactObjects && unify.open,
 				wrapArray:  nonExactArrays  && unify.open,
@@ -79,6 +85,8 @@
 		ice.assert(stackOut.length == 1);
 		return stackOut[0];
 	}
+	preprocess.registry = registry;
+	preprocess.filters  = filters;
 
 	return preprocess;
 });
