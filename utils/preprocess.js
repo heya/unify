@@ -68,18 +68,17 @@
 	function preprocess(source, nonExactObjects, nonExactArrays, opt){
 		opt = opt || empty;
 
-		var stackOut = [];
+		var context = opt.context || {}, stackOut = [];
+		context.stackOut = stackOut;
+		context.wrapObject = nonExactObjects && unify.open;
+		context.wrapArray  = nonExactArrays  && unify.open;
 
 		walk(source, {
 			processObject: opt.processObject || processObject,
 			processOther:  opt.processOther  || processOther,
 			registry:      opt.registry || preprocess.registry,
 			filters:       opt.filters  || preprocess.filters,
-			context: {
-				wrapObject: nonExactObjects && unify.open,
-				wrapArray:  nonExactArrays  && unify.open,
-				stackOut:   stackOut
-			}
+			context:       context
 		});
 
 		ice.assert(stackOut.length == 1);
