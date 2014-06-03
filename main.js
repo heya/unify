@@ -200,7 +200,7 @@
 			Date,   unifyDate,
 			RegExp, unifyRegExp
 		];
-	var unifiers = [];
+	var filters = [];
 
 	function unifyArray(l, r, ls, rs, env){
 		if(!r || !(r instanceof Array) || !env.arrayType && l.length != r.length) return false;
@@ -418,18 +418,18 @@
 			if(typeof l != "object" && typeof l != "function" || !l || !r){
 				return null;
 			}
-			// process custom unifiers
-			var registry = unify.unifiers;
+			// process registered constructors
+			var registry = unify.registry;
 			for(var i = 0, len = registry.length; i < len; i += 2){
-				if(registry[i](l, r)){
+				if(l instanceof registry[i] || r instanceof registry[i]){
 					if(registry[i + 1](l, r, ls, rs, env)) continue main;
 					return null;
 				}
 			}
-			// process registered constructors
-			registry = unify.registry;
+			// process registered filters
+			registry = unify.filters;
 			for(i = 0, len = registry.length; i < len; i += 2){
-				if(l instanceof registry[i] || r instanceof registry[i]){
+				if(registry[i](l, r)){
 					if(registry[i + 1](l, r, ls, rs, env)) continue main;
 					return null;
 				}
@@ -444,7 +444,7 @@
 
 	unify._ = unify.any = _;
 	unify.registry = registry;
-	unify.unifiers = unifiers;
+	unify.filters  = filters;
 	unify.Env = Env;
 	unify.Unifier = Unifier;
 	unify.Variable = Var;

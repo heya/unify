@@ -507,7 +507,7 @@ function(module, ice, unify, preprocess, matchString, matchTypeOf, matchInstance
 			eval(TEST("v('rnode').bound(env)"));
 			eval(TEST("unify(v('rnode'), {left: 3, right: 4}, env)"));
 		},
-		function test_unifiers(){
+		function test_filters(){
 			var counter = 0;
 			function Foo(name){
 				this.counter = ++counter;
@@ -517,8 +517,8 @@ function(module, ice, unify, preprocess, matchString, matchTypeOf, matchInstance
 			var l = {x: new Foo("Sam"), y: new Foo("Mary")},
 				r = {x: new Foo("Sam"), y: new Foo("Mary")};
 			eval(TEST("counter === 4"));
-			// delayed unifier
-			unify.unifiers.push(
+			// delayed filter
+			unify.filters.push(
 				function test(l, r){
 					return l.flag || r.flag;
 				},
@@ -532,10 +532,10 @@ function(module, ice, unify, preprocess, matchString, matchTypeOf, matchInstance
 				}
 			);
 			eval(TEST("unify(l, r)"));
-			unify.unifiers.pop();
-			unify.unifiers.pop();
-			// immediate unifier
-			unify.unifiers.push(
+			unify.filters.pop();
+			unify.filters.pop();
+			// immediate filter
+			unify.filters.push(
 				function test(l, r){
 					return l.flag || r.flag;
 				},
@@ -547,9 +547,9 @@ function(module, ice, unify, preprocess, matchString, matchTypeOf, matchInstance
 				}
 			);
 			eval(TEST("unify(l, r)"));
-			unify.unifiers.pop();
-			unify.unifiers.pop();
-			// no custom unifiers
+			unify.filters.pop();
+			unify.filters.pop();
+			// no custom filters
 			eval(TEST("!unify(l, r)"));
 			// instanceof-based custom unifier
 			unify.registry.push(
