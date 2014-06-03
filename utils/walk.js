@@ -7,22 +7,24 @@
 	function nop(){}
 	function Command(f, s){ this.f = f; this.s = s; }
 
-	function processCommand(x, stack){
-		x.f(stack);
+	function processCommand(val, context){
+		val.f(context);
 	}
 
-	function processObject(x, stack){
-		for(var k in x){
-			if(x.hasOwnProperty(k)){
-				stack.push(x[k]);
+	function processObject(val, context){
+		var stack = context.stack;
+		for(var k in val){
+			if(val.hasOwnProperty(k)){
+				stack.push(val[k]);
 			}
 		}
 	}
 
-	function processArray(x, stack){
-		for(var i = 0, l = x.length; i < l; ++i){
-			if(x.hasOwnProperty(i)){
-				stack.push(x[i]);
+	function processArray(val, context){
+		var stack = context.stack;
+		for(var i = 0, l = val.length; i < l; ++i){
+			if(val.hasOwnProperty(i)){
+				stack.push(val[i]);
 			}
 		}
 	}
@@ -42,29 +44,30 @@
 			doOther  = opt.processOther  || nop,
 			registry = opt.registry      || defaultRegistry,
 			filters  = opt.filters       || defaultFilters,
+			context  = opt.context       || {},
 			stack    = [o];
+			context.stack = stack;
 		main: while(stack.length){
 			o = stack.pop();
 			if(o && typeof o == "object"){
 				// process registered constructors
 				for(var i = 0; i < registry.length; i += 2){
 					if(o instanceof registry[i]){
-						registry[i + 1](o, stack);
+						registry[i + 1](o, context);
 						continue main;
 					}
 				}
 				// process registered filters
-				for(i = 0; i < filters.length; i += 2){
-					if(filters[i](o)){
-						filters[i + 1](o, stack);
+				for(i = 0; i < filters.length; ++i){
+					if(filters[i](o, context)){
 						continue main;
 					}
 				}
 				// process naked objects
-				doObject(o, stack);
+				doObject(o, context);
 				continue;
 			}
-			doOther(o, stack);
+			doOther(o, context);
 		}
 	}
 
