@@ -67,10 +67,14 @@
 		}
 
 		function processObject(s, stack){
-			stack.push(new (walk.Command)(postObject, s));
-			for(var k in s){
-				if(s.hasOwnProperty(k)){
-					stack.push(s[k]);
+			if(s === unify._){
+				stackOut.push(s);
+			}else{
+				stack.push(new (walk.Command)(postObject, s));
+				for(var k in s){
+					if(s.hasOwnProperty(k)){
+						stack.push(s[k]);
+					}
 				}
 			}
 		}
@@ -80,6 +84,10 @@
 		}
 
 		var registry = [
+				walk.Command,
+				function processCommand(s, stack){
+					s.f(stack);
+				},
 				Array,
 				function processArray(s, stack){
 					stack.push(new (walk.Command)(postArray, s));
