@@ -1,9 +1,9 @@
 /* UMD.define */ (typeof define=="function"&&define||function(d,f,m){m={module:module,require:require};module.exports=f.apply(null,d.map(function(n){return m[n]||require(n)}))})
 (["module", "heya-ice", "../main", "../utils/preprocess", "../unifiers/matchString",
-	"../unifiers/matchTypeOf", "../unifiers/matchInstanceOf", "../unifiers/ref",
-	"../utils/walk", "../utils/clone", "../utils/assemble", "../utils/replace"],
-function(module, ice, unify, preprocess, matchString, matchTypeOf, matchInstanceOf, ref,
-		walk, clone, assemble, replace){
+	"../unifiers/matchTypeOf", "../unifiers/matchInstanceOf", "../unifiers/match",
+	"../unifiers/ref", "../utils/walk", "../utils/clone", "../utils/assemble", "../utils/replace"],
+function(module, ice, unify, preprocess, matchString, matchTypeOf, matchInstanceOf, match,
+		ref, walk, clone, assemble, replace){
 	"use strict";
 
 	ice = ice.specialize(module);
@@ -403,6 +403,18 @@ function(module, ice, unify, preprocess, matchString, matchTypeOf, matchInstance
 			result = unify({}, matchInstanceOf(Array));
 			eval(TEST("!result"));
 		},
+		function test_match(){
+			var smallNumber = match(function(val){ return typeof val == "number" && 0 < val && val < 10; });
+
+			var result = unify(5, smallNumber);
+			eval(TEST("result"));
+			var result = unify(10, smallNumber);
+			eval(TEST("!result"));
+			var result = unify(0, smallNumber);
+			eval(TEST("!result"));
+			var result = unify("5", smallNumber);
+			eval(TEST("!result"));
+		},
 		function test_walk(){
 			var result = {};
 			walk({
@@ -487,7 +499,7 @@ function(module, ice, unify, preprocess, matchString, matchTypeOf, matchInstance
 			eval(TEST("unify(result, source, env)"));
 			eval(TEST("unify(result, {z: {x: [{y: false}]}})"));
 		},
-		function test_Ref(){
+		function test_ref(){
 			var source = {
 					left:  {left: 1, right: 2},
 					right: {left: 3, right: 4}
