@@ -8,8 +8,8 @@
 
 	Match.prototype = Object.create(unify.Unifier.prototype);
 
-	Match.prototype.unify = function(val, ls, rs){
-		return this.f(val, ls, rs);
+	Match.prototype.unify = function(val, ls, rs, env){
+		return this.f(val, ls, rs, env);
 	};
 
 	return function match(f){
