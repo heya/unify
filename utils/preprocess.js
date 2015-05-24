@@ -60,6 +60,7 @@
 				}
 			},
 			unify.Variable, processOther,
+			unify.Unifier,  processOther,
 			Date,           processOther,
 			RegExp,         processOther
 		],

@@ -79,8 +79,9 @@
 					context.stackOut.push(val);
 				}
 			},
-			Date,   processOther,
-			RegExp, processOther
+			unify.Unifier, processOther,
+			Date,          processOther,
+			RegExp,        processOther
 		],
 		filters = [];
 

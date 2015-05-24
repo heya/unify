@@ -64,6 +64,10 @@
 					context.stackOut.push(val);
 				}
 			},
+			unify.Unifier,
+			function processAsValue(val, context){
+				context.stackOut.push(val);
+			},
 			Date,
 			function processDate(val, context){
 				context.stackOut.push(new Date(val.getTime()));
