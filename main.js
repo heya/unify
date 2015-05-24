@@ -367,8 +367,7 @@
 		if(ops.precheck && !ops.precheck(l, r)) return false;
 		if(ops.fix && rm) ls.push(new Command(ops.fix, rm));
 		if(ops.update) ls.push(new Command(ops.update, l, r));
-		if(!ops.compare(l, r, ls, rs, env)) return false;
-		return true;
+		return ops.compare(l, r, ls, rs, env);
 	}
 
 	// unification
