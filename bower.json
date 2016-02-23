@@ -1,0 +1,33 @@
+{
+  "name": "heya-unify",
+  "description": "Unify: a unification tool with a deep equivalence and partitioning of objects.",
+  "main": "main.js",
+  "authors": [
+    "Eugene Lazutkin <eugene.lazutkin@gmail.com> (http://lazutkin.com/)"
+  ],
+  "license": "BSD-3-Clause",
+  "keywords": [
+    "unification",
+    "equivalence",
+    "comparison",
+    "deep",
+    "equivalence",
+    "code",
+    "generation",
+    "code",
+    "construction"
+  ],
+  "homepage": "https://github.com/heya/unify",
+  "moduleType": [
+    "amd",
+    "globals",
+    "node"
+  ],
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
