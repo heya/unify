@@ -9,9 +9,12 @@
   "dependencies": {
     "heya-ice": ">=0.1"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "heya-globalize": "^1.0.2"
+  },
   "scripts": {
-    "test": "node tests/tests.js"
+    "test": "node tests/tests.js",
+    "dist": "node node_modules/heya-globalize/index.js"
   },
   "repository": {
     "type": "git",
@@ -26,11 +29,16 @@
     "code construction"
   ],
   "author": "Eugene Lazutkin <eugene.lazutkin@gmail.com> (http://lazutkin.com/)",
-  "license": "BSD",
+  "license": "BSD-3-Clause",
   "volo": {
     "type": "directory",
     "dependencies": {
       "heya-ice": "github:heya/ice"
     }
+  },
+  "browserGlobals": {
+    "!root": "heya.unify",
+    "./main": "heya.unify",
+    "heya-ice": "heya.ice"
   }
 }
