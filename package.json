@@ -1,13 +1,13 @@
 {
   "name": "heya-unify",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "description": "Unify: a unification tool with a deep equivalence and partitioning of objects.",
   "main": "main.js",
   "directories": {
     "test": "tests"
   },
   "dependencies": {
-    "heya-ice": ">=0.1"
+    "heya-ice": "^0.1.11"
   },
   "devDependencies": {
     "heya-globalize": "^1.0.2"
