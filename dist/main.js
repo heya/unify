@@ -295,9 +295,26 @@
 			exact: {
 				exact: {
 					precheck: function(l, r){
-						for(var k in l){
-							if((typeof l.hasOwnProperty == 'function' ? l.hasOwnProperty(k) : hasOwnProperty.call(l, k))
-								&& !(typeof r.hasOwnProperty == 'function' ? r.hasOwnProperty(k) : hasOwnProperty.call(r, k))) return false;
+						if(typeof l.hasOwnProperty == 'function'){
+							if(typeof r.hasOwnProperty == 'function'){
+								for(var k in l){
+									if(l.hasOwnProperty(k) && !r.hasOwnProperty(k)) return false;
+								}
+							}else{
+								for(var k in l){
+									if(l.hasOwnProperty(k) && !hasOwnProperty.call(r, k)) return false;
+								}
+							}
+						}else{
+							if(typeof r.hasOwnProperty == 'function'){
+								for(var k in l){
+									if(hasOwnProperty.call(l, k) && !r.hasOwnProperty(k)) return false;
+								}
+							}else{
+								for(var k in l){
+									if(hasOwnProperty.call(l, k) && !hasOwnProperty.call(r, k)) return false;
+								}
+							}
 						}
 						return true;
 					}
@@ -314,16 +331,55 @@
 			soft: {
 				soft: {
 					update: function(){
-						for(var k in this.l){
-							if((typeof this.l.hasOwnProperty == 'function' ? this.l.hasOwnProperty(k) : hasOwnProperty.call(this.l, k))
-									&& !(typeof this.r.hasOwnProperty == 'function' ? this.r.hasOwnProperty(k) : hasOwnProperty.call(this.r, k))){
-								this.r[k] = this.l[k];
+						if(typeof this.l.hasOwnProperty == 'function'){
+							if(typeof this.r.hasOwnProperty == 'function'){
+								for(var k in this.l){
+									if(this.l.hasOwnProperty(k) && !this.r.hasOwnProperty(k)){
+										this.r[k] = this.l[k];
+									}
+								}
+								for(k in this.r){
+									if(this.r.hasOwnProperty(k) && !this.l.hasOwnProperty(k)){
+										this.l[k] = this.r[k];
+									}
+								}
+							}else{
+								for(var k in this.l){
+									if(this.l.hasOwnProperty(k) && !hasOwnProperty.call(this.r, k)){
+										this.r[k] = this.l[k];
+									}
+								}
+								for(k in this.r){
+									if(this.r.hasOwnProperty(k) && !hasOwnProperty.call(this.l, k)){
+										this.l[k] = this.r[k];
+									}
+								}
 							}
-						}
-						for(k in this.r){
-							if((typeof this.r.hasOwnProperty == 'function' ? this.r.hasOwnProperty(k) : hasOwnProperty.call(this.r, k))
-									&& !(typeof this.l.hasOwnProperty == 'function' ? this.l.hasOwnProperty(k) : hasOwnProperty.call(this.l, k))){
-								this.l[k] = this.r[k];
+						}else{
+							if(typeof this.r.hasOwnProperty == 'function'){
+								for(var k in this.l){
+									if(hasOwnProperty.call(this.l, k) && !this.r.hasOwnProperty(k)){
+										this.r[k] = this.l[k];
+									}
+								}
+								for(k in this.r){
+									if(hasOwnProperty.call(this.rk) && !this.l.hasOwnProperty(k)){
+										this.l[k] = this.r[k];
+									}
+								}
+							}else{
+								if(typeof this.r.hasOwnProperty == 'function'){
+									for(var k in this.l){
+										if(hasOwnProperty.call(this.l, k) && !hasOwnProperty.call(this.r, k)){
+											this.r[k] = this.l[k];
+										}
+									}
+									for(k in this.r){
+										if(hasOwnProperty.call(this.rk) && !hasOwnProperty.call(this.l, k)){
+											this.l[k] = this.r[k];
+										}
+									}
+								}
 							}
 						}
 					}
@@ -332,34 +388,119 @@
 		};
 	objectOps.exact.exact.compare = objectOps.exact.open.compare = objectOps.exact.soft.compare =
 		function(l, r, ls, rs){
-			for(var k in r){
-				if((typeof r.hasOwnProperty == 'function' ? r.hasOwnProperty(k) : hasOwnProperty.call(r, k))){
-					if(!(typeof l.hasOwnProperty == 'function' ? l.hasOwnProperty(k) : hasOwnProperty.call(l, k))){
-						return false;
+			if(typeof l.hasOwnProperty == 'function'){
+				if(typeof r.hasOwnProperty == 'function'){
+					for(var k in r){
+						if(r.hasOwnProperty(k)){
+							if(!l.hasOwnProperty(k)){
+								return false;
+							}
+							ls.push(l[k]);
+							rs.push(r[k])
+						}
 					}
-					ls.push(l[k]);
-					rs.push(r[k])
+				}else{
+					for(var k in r){
+						if(hasOwnProperty.call(r, k)){
+							if(!l.hasOwnProperty(k)){
+								return false;
+							}
+							ls.push(l[k]);
+							rs.push(r[k])
+						}
+					}
+				}
+			}else{
+				if(typeof r.hasOwnProperty == 'function'){
+					for(var k in r){
+						if(r.hasOwnProperty(k)){
+							if(!hasOwnProperty.call(l, k)){
+								return false;
+							}
+							ls.push(l[k]);
+							rs.push(r[k])
+						}
+					}
+				}else{
+					for(var k in r){
+						if(hasOwnProperty.call(r, k)){
+							if(!hasOwnProperty.call(l, k)){
+								return false;
+							}
+							ls.push(l[k]);
+							rs.push(r[k])
+						}
+					}
 				}
 			}
 			return true;
 		};
 	objectOps.open.open.compare = objectOps.open.soft.compare = objectOps.soft.soft.compare =
 		function(l, r, ls, rs){
-			for(var k in r){
-				if((typeof r.hasOwnProperty == 'function' ? r.hasOwnProperty(k) : hasOwnProperty.call(r, k))
-						&& (typeof l.hasOwnProperty == 'function' ? l.hasOwnProperty(k) : hasOwnProperty.call(l, k))){
-					ls.push(l[k]);
-					rs.push(r[k])
+			if(typeof l.hasOwnProperty == 'function'){
+				if(typeof r.hasOwnProperty == 'function'){
+					for(var k in r){
+						if(r.hasOwnProperty(k) && l.hasOwnProperty(k)){
+							ls.push(l[k]);
+							rs.push(r[k])
+						}
+					}
+				}else{
+					for(var k in r){
+						if(hasOwnProperty.call(r, k) && l.hasOwnProperty(k)){
+							ls.push(l[k]);
+							rs.push(r[k])
+						}
+					}
+				}
+			}else{
+				if(typeof r.hasOwnProperty == 'function'){
+					for(var k in r){
+						if(r.hasOwnProperty(k) && hasOwnProperty.call(l, k)){
+							ls.push(l[k]);
+							rs.push(r[k])
+						}
+					}
+				}else{
+					for(var k in r){
+						if(hasOwnProperty.call(r, k) && hasOwnProperty.call(l, k)){
+							ls.push(l[k]);
+							rs.push(r[k])
+						}
+					}
 				}
 			}
 			return true;
 		};
 	objectOps.exact.soft.update = objectOps.open.soft.update =
 		function(){
-			for(var k in this.l){
-				if((typeof this.l.hasOwnProperty == 'function' ? this.l.hasOwnProperty(k) : hasOwnProperty.call(this.l, k))
-						&& !(typeof this.r.hasOwnProperty == 'function' ? this.r.hasOwnProperty(k) : hasOwnProperty.call(this.r, k))){
-					this.r[k] = this.l[k];
+			if(typeof this.l.hasOwnProperty == 'function'){
+				if(typeof this.r.hasOwnProperty == 'function'){
+					for(var k in this.l){
+						if(this.l.hasOwnProperty(k) && !this.r.hasOwnProperty(k)){
+							this.r[k] = this.l[k];
+						}
+					}
+				}else{
+					for(var k in this.l){
+						if(this.l.hasOwnProperty(k) && !hasOwnProperty.call(this.r, k)){
+							this.r[k] = this.l[k];
+						}
+					}
+				}
+			}else{
+				if(typeof this.r.hasOwnProperty == 'function'){
+					for(var k in this.l){
+						if(hasOwnProperty.call(this.l, k) && !this.r.hasOwnProperty(k)){
+							this.r[k] = this.l[k];
+						}
+					}
+				}else{
+					for(var k in this.l){
+						if(hasOwnProperty.call(this.l, k) && !hasOwnProperty.call(this.r, k)){
+							this.r[k] = this.l[k];
+						}
+					}
 				}
 			}
 		};
