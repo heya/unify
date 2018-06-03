@@ -289,12 +289,15 @@
 
 	// unification of objects
 
+	var hasOwnProperty = Object.prototype.hasOwnProperty;
+
 	var objectOps = {
 			exact: {
 				exact: {
 					precheck: function(l, r){
 						for(var k in l){
-							if(l.hasOwnProperty(k) && !r.hasOwnProperty(k)) return false;
+							if((typeof l.hasOwnProperty == 'function' ? l.hasOwnProperty(k) : hasOwnProperty.call(l, k))
+								&& !(typeof r.hasOwnProperty == 'function' ? r.hasOwnProperty(k) : hasOwnProperty.call(r, k))) return false;
 						}
 						return true;
 					}
@@ -312,12 +315,14 @@
 				soft: {
 					update: function(){
 						for(var k in this.l){
-							if(this.l.hasOwnProperty(k) && !this.r.hasOwnProperty(k)){
+							if((typeof this.l.hasOwnProperty == 'function' ? this.l.hasOwnProperty(k) : hasOwnProperty.call(this.l, k))
+									&& !(typeof this.r.hasOwnProperty == 'function' ? this.r.hasOwnProperty(k) : hasOwnProperty.call(this.r, k))){
 								this.r[k] = this.l[k];
 							}
 						}
 						for(k in this.r){
-							if(this.r.hasOwnProperty(k) && !this.l.hasOwnProperty(k)){
+							if((typeof this.r.hasOwnProperty == 'function' ? this.r.hasOwnProperty(k) : hasOwnProperty.call(this.r, k))
+									&& !(typeof this.l.hasOwnProperty == 'function' ? this.l.hasOwnProperty(k) : hasOwnProperty.call(this.l, k))){
 								this.l[k] = this.r[k];
 							}
 						}
@@ -328,8 +333,8 @@
 	objectOps.exact.exact.compare = objectOps.exact.open.compare = objectOps.exact.soft.compare =
 		function(l, r, ls, rs){
 			for(var k in r){
-				if(r.hasOwnProperty(k)){
-					if(!l.hasOwnProperty(k)){
+				if((typeof r.hasOwnProperty == 'function' ? r.hasOwnProperty(k) : hasOwnProperty.call(r, k))){
+					if(!(typeof l.hasOwnProperty == 'function' ? l.hasOwnProperty(k) : hasOwnProperty.call(l, k))){
 						return false;
 					}
 					ls.push(l[k]);
@@ -341,7 +346,8 @@
 	objectOps.open.open.compare = objectOps.open.soft.compare = objectOps.soft.soft.compare =
 		function(l, r, ls, rs){
 			for(var k in r){
-				if(r.hasOwnProperty(k) && l.hasOwnProperty(k)){
+				if((typeof r.hasOwnProperty == 'function' ? r.hasOwnProperty(k) : hasOwnProperty.call(r, k))
+						&& (typeof l.hasOwnProperty == 'function' ? l.hasOwnProperty(k) : hasOwnProperty.call(l, k))){
 					ls.push(l[k]);
 					rs.push(r[k])
 				}
@@ -351,7 +357,8 @@
 	objectOps.exact.soft.update = objectOps.open.soft.update =
 		function(){
 			for(var k in this.l){
-				if(this.l.hasOwnProperty(k) && !this.r.hasOwnProperty(k)){
+				if((typeof this.l.hasOwnProperty == 'function' ? this.l.hasOwnProperty(k) : hasOwnProperty.call(this.l, k))
+						&& !(typeof this.r.hasOwnProperty == 'function' ? this.r.hasOwnProperty(k) : hasOwnProperty.call(this.r, k))){
 					this.r[k] = this.l[k];
 				}
 			}
