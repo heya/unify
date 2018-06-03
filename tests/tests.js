@@ -621,6 +621,23 @@ function(module, ice, unify, preprocess, matchString, matchTypeOf, matchInstance
 			eval(TEST("val.bound(env)"));
 			eval(TEST("unify(val, 3, env)"));
 			eval(TEST("replace('${x} + ${y} = ${val}', env) === '1 + 2 = 3'"));
+		},
+		function test_nullProto(){
+			var x = Object.create(null), y = Object.create(null), z = Object.create(null);
+			x.a = 1, x.b = [], x.c = null;
+			y.a = 1, y.b = [], y.c = null;
+			z.a = 2, z.b = [], z.c = null;
+
+			var env = unify(x, y);
+			eval(TEST("env"));
+			env = unify(x, {c: null, b: [], a: 1});
+			eval(TEST("env"));
+			env = unify(y, {c: null, b: [], a: 1});
+			eval(TEST("env"));
+			env = unify(x, z);
+			eval(TEST("!env"));
+			env = unify(x, {c: null, b: [], a: 2});
+			eval(TEST("!env"));
 		}
 	];
 
